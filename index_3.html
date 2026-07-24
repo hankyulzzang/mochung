@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>양희근 · 장한결 결혼합니다</title>
+
+<meta property="og:title" content="양희근 · 장한결 결혼합니다">
+<meta property="og:description" content="2026년 12월 19일 토요일 오후 6시 30분 | 라마다 서울 신도림 호텔">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@400;700;800&family=Dancing+Script:wght@600&display=swap" rel="stylesheet">
+
+<style>
+  :root{
+    --bg: #F7FAFC;
+    --card: #FFFFFF;
+    --green: #1B3A2B;
+    --green-soft: #4E6B58;
+    --gold: #C9A257;
+    --gold-soft: #C9A25755;
+  }
+  *{ box-sizing: border-box; }
+  html,body{ margin:0; padding:0; }
+  body{
+    background: var(--bg);
+    font-family: 'Nanum Myeongjo', serif;
+    color: var(--green);
+    display:flex;
+    justify-content:center;
+  }
+  .page{
+    width:100%;
+    max-width:480px;
+    min-height:100vh;
+    background: var(--bg);
+    position:relative;
+    overflow-x:hidden;
+  }
+
+  #intro{
+    position:fixed;
+    inset:0;
+    z-index:999;
+    background:#111;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    transition: opacity 0.8s ease;
+  }
+  #intro.hide{ opacity:0; pointer-events:none; }
+  .intro-photo-wrap{
+    position:relative;
+    width:78%;
+    max-width:320px;
+    aspect-ratio: 3/5.4;
+    border-radius:34px;
+    overflow:hidden;
+    background:#2a2a2a;
+  }
+  .intro-photo-wrap img{
+    width:100%; height:100%; object-fit:cover; display:block;
+  }
+  .intro-caption{
+    position:absolute;
+    left:0; right:0; bottom:14%;
+    text-align:center;
+    font-family:'Dancing Script', cursive;
+    font-size:30px;
+    line-height:1.25;
+    color:#AEE0F0;
+    text-shadow:0 0 10px rgba(174,224,240,0.5);
+    clip-path: inset(0 100% 0 0);
+    animation: handwrite 2.2s ease-out 0.4s forwards;
+  }
+  @keyframes handwrite{ to{ clip-path: inset(0 0 0 0); } }
+
+  section{ padding:44px 28px; text-align:center; }
+  .eyebrow{ color:var(--gold); font-size:12px; letter-spacing:2px; margin:0 0 14px; }
+  .fadeup{ opacity:0; transform:translateY(18px); transition:opacity 0.7s ease, transform 0.7s ease; }
+  .fadeup.show{ opacity:1; transform:translateY(0); }
+
+  .hero-photo{ position:relative; width:100%; aspect-ratio:3/4; border-radius:6px; overflow:hidden; margin-bottom:26px; background:#EEF4F7; }
+  .hero-photo img{ width:100%; height:100%; object-fit:cover; display:block; }
+  .petal{ position:absolute; top:-12px; width:12px; height:8px; background:#fff; box-shadow:0 0 4px rgba(255,255,255,0.7); border-radius:50% 50% 50% 0; animation: petalfall linear infinite; }
+  @keyframes petalfall{
+    0%{ transform:translateY(-10%) translateX(0) rotate(0deg); opacity:0; }
+    8%{ opacity:1; }
+    100%{ transform:translateY(480px) translateX(24px) rotate(360deg); opacity:0; }
+  }
+  .names{ font-size:24px; font-weight:700; margin:0 0 8px; }
+  .date{ color:var(--gold); font-size:14px; margin:0 0 18px; }
+  .parents{ color:var(--green-soft); font-size:13px; line-height:1.8; margin:0; }
+
+  .greeting{ font-size:14px; line-height:2; color:var(--green); margin:0; }
+
+  .dday-num{ font-size:30px; font-weight:800; margin:6px 0 4px; }
+  .dday-date{ color:var(--green-soft); font-size:13px; margin:0 0 22px; }
+  .calendar{ border:1px solid var(--gold-soft); border-radius:6px; padding:18px 10px; }
+  .cal-title{ font-size:15px; margin:0 0 14px; }
+  .cal-grid{ display:grid; grid-template-columns:repeat(7,1fr); gap:8px 0; font-size:13px; }
+  .cal-dow{ color:var(--green-soft); font-size:11px; }
+  .cal-dow.sun{ color:#C97A7A; }
+  .cal-day.d-day{ background:var(--gold); color:#fff; border-radius:50%; width:24px; height:24px; display:flex; align-items:center; justify-content:center; margin:0 auto; }
+
+  .venue-name{ font-size:15px; margin:0 0 4px; }
+  .venue-addr{ color:var(--green-soft); font-size:13px; margin:0 0 16px; }
+  .map-frame{ display:block; width:100%; border-radius:6px; overflow:hidden; border:1px solid var(--gold-soft); margin-bottom:16px; text-decoration:none; }
+  .map-cta{ display:flex; align-items:center; justify-content:center; gap:8px; padding:22px 10px; background:#EEF4F7; color:var(--green); font-size:13px; }
+  .map-pin{ font-style:normal; font-size:16px; }
+  .shuttle-box{ border:1px solid var(--gold-soft); border-radius:6px; padding:14px; text-align:center; }
+  .shuttle-title{ font-size:13px; margin:0 0 6px; }
+  .shuttle-text{ color:var(--green-soft); font-size:12px; line-height:1.7; margin:0; }
+
+  .gallery-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:6px; }
+  .gallery-grid img{ width:100%; aspect-ratio:1; object-fit:cover; border-radius:4px; display:block; background:#EEF4F7; }
+  .gallery-more{ display:none; grid-template-columns:repeat(3,1fr); gap:6px; margin-top:6px; }
+  .gallery-more.show{ display:grid; }
+  .more-btn{ margin-top:10px; width:100%; padding:10px; background:transparent; border:1px solid var(--gold-soft); border-radius:4px; color:var(--gold); font-family:'Nanum Myeongjo', serif; font-size:13px; cursor:pointer; }
+
+  .acc-item{ border:1px solid var(--gold-soft); border-radius:6px; margin-bottom:8px; text-align:left; overflow:hidden; }
+  .acc-summary{ padding:14px; font-size:13px; cursor:pointer; display:flex; justify-content:space-between; align-items:center; }
+  .acc-summary::after{ content:'+'; color:var(--gold); font-size:16px; }
+  .acc-item.open .acc-summary::after{ content:'−'; }
+  .acc-body{ max-height:0; overflow:hidden; transition:max-height 0.3s ease; padding:0 14px; }
+  .acc-item.open .acc-body{ max-height:200px; padding:0 14px 14px; }
+  .acc-row{ display:flex; justify-content:space-between; padding:6px 0; border-top:1px solid #EDEAE0; font-size:12px; }
+  .acc-row:first-child{ border-top:none; }
+  .acc-label{ color:var(--green-soft); }
+  .acc-value{ color:var(--green); }
+
+  .film-section{ padding:44px 0; text-align:center; }
+  .film-strip{
+    display:flex;
+    gap:14px;
+    overflow-x:auto;
+    scroll-snap-type:x mandatory;
+    padding:0 28px 14px;
+    -webkit-overflow-scrolling:touch;
+  }
+  .film-strip::-webkit-scrollbar{ height:4px; }
+  .film-card{
+    flex:0 0 auto;
+    scroll-snap-align:center;
+    background:#FFFFFF;
+    border:1px solid #EDEAE0;
+    box-shadow:0 2px 8px rgba(0,0,0,0.06);
+    padding:10px 10px 22px;
+    width:220px;
+  }
+  .film-card img{
+    width:100%;
+    aspect-ratio:3/4;
+    object-fit:cover;
+    display:block;
+    background:#EEF4F7;
+  }
+  .film-hint{ color:var(--green-soft); font-size:12px; margin:14px 0 0; }
+</style>
+</head>
+<body>
+
+<div id="intro">
+  <div class="intro-photo-wrap">
+    <img id="introImg" alt="대표사진">
+    <div class="intro-caption">We're getting<br>married!</div>
+  </div>
+</div>
+
+<div class="page">
+
+  <section>
+    <p class="eyebrow fadeup">WEDDING INVITATION</p>
+    <div class="hero-photo fadeup" id="heroPhoto">
+      <img id="heroImg" alt="대표사진">
+    </div>
+    <p class="names fadeup">양희근 · 장한결</p>
+    <p class="date fadeup">2026. 12. 19 THU 6:30 PM</p>
+    <p class="parents fadeup">양문보 · 신이선의 장남 양희근<br>장남석 · 김은화의 장녀 장한결</p>
+  </section>
+
+  <section>
+    <p class="greeting fadeup">
+      두 사람이 하나 되는 약속의 자리에<br>
+      소중한 분들을 초대합니다.<br>
+      귀한 걸음 하시어 축복해 주시면<br>
+      더없는 기쁨이겠습니다.
+    </p>
+  </section>
+
+  <section>
+    <p class="eyebrow fadeup">D-DAY</p>
+    <p class="dday-num fadeup" id="ddayNum">D-148</p>
+    <p class="dday-date fadeup">2026년 12월 19일 토요일</p>
+    <div class="calendar fadeup">
+      <p class="cal-title">2026년 12월</p>
+      <div class="cal-grid" id="calGrid"></div>
+    </div>
+  </section>
+
+  <section>
+    <p class="eyebrow fadeup">오시는 길</p>
+    <p class="venue-name fadeup">라마다 서울 신도림 호텔</p>
+    <p class="venue-addr fadeup">서울 구로구 경인로 624</p>
+    <a class="map-frame fadeup" href="https://map.naver.com/p/search/%EB%9D%BC%EB%A7%88%EB%8B%A4%20%EC%84%9C%EC%9A%B8%20%EC%8B%A0%EB%8F%84%EB%A6%BC%20%ED%98%B8%ED%85%94" target="_blank" rel="noopener">
+      <div class="map-cta">
+        <i class="map-pin">📍</i>
+        <span>네이버지도에서 보기 · 길찾기</span>
+      </div>
+    </a>
+    <div class="shuttle-box fadeup">
+      <p class="shuttle-title">셔틀버스 안내</p>
+      <p class="shuttle-text">신도림역 1번 출구 앞에서 탑승, 호텔까지 약 5분 간격으로 운행됩니다.</p>
+    </div>
+  </section>
+
+  <section>
+    <p class="eyebrow fadeup">사진 갤러리</p>
+    <div class="gallery-grid fadeup" id="galleryMain"></div>
+    <div class="gallery-more" id="galleryMore"></div>
+    <button class="more-btn fadeup" id="moreBtn" onclick="toggleGallery()" style="display:none;">더보기</button>
+  </section>
+
+  <section>
+    <p class="eyebrow fadeup">마음 전하는 곳</p>
+    <div class="acc-item fadeup" onclick="this.classList.toggle('open')">
+      <div class="acc-summary">신랑측 계좌번호</div>
+      <div class="acc-body">
+        <div class="acc-row"><span class="acc-label">신랑</span><span class="acc-value" id="acc-groom">계좌번호 준비중</span></div>
+        <div class="acc-row"><span class="acc-label">신랑 아버지</span><span class="acc-value" id="acc-groom-father">계좌번호 준비중</span></div>
+        <div class="acc-row"><span class="acc-label">신랑 어머니</span><span class="acc-value" id="acc-groom-mother">계좌번호 준비중</span></div>
+      </div>
+    </div>
+    <div class="acc-item fadeup" onclick="this.classList.toggle('open')">
+      <div class="acc-summary">신부측 계좌번호</div>
+      <div class="acc-body">
+        <div class="acc-row"><span class="acc-label">신부</span><span class="acc-value" id="acc-bride">계좌번호 준비중</span></div>
+        <div class="acc-row"><span class="acc-label">신부 아버지</span><span class="acc-value" id="acc-bride-father">계좌번호 준비중</span></div>
+        <div class="acc-row"><span class="acc-label">신부 어머니</span><span class="acc-value" id="acc-bride-mother">계좌번호 준비중</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="film-section">
+    <div class="film-strip fadeup" id="filmStrip"></div>
+    <p class="film-hint fadeup">옆으로 넘겨서 더 보실 수 있어요</p>
+  </section>
+
+</div>
+
+<script>
+/* =========================================================
+   설정: 구글 시트 CSV 링크만 넣으면 사진과 계좌번호가
+   전부 시트에서 자동으로 불러와집니다.
+   ========================================================= */
+const CONFIG = {
+  weddingDateTime: "2026-12-19T18:30:00+09:00",
+  // 구글 시트를 "웹에 게시(Publish to web) > CSV" 한 링크를 여기 붙여넣으세요.
+  sheetCsvUrl: "https://docs.google.com/spreadsheets/d/e/2PACX-1vR63GD_WIHKqczR9JzJ_dlWJOq1LB-1MHuMWFZSKEPWZRNVcBwaXs3oCynZbUWBA1MGZcV0k-yrQGzI/pub?gid=0&single=true&output=csv"
+};
+
+// 구글 드라이브 공유링크를 이미지로 바로 보이는 링크로 바꿔주는 함수
+function driveDirectUrl(url){
+  if(!url) return url;
+  const m = url.match(/\/d\/([a-zA-Z0-9_-]+)/) || url.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+  if(m) return "https://lh3.googleusercontent.com/d/" + m[1];
+  return url;
+}
+
+function parseCSV(text){
+  const map = {};
+  text.split(/\r?\n/).forEach(function(line){
+    if(!line.trim()) return;
+    const idx = line.indexOf(',');
+    if(idx === -1) return;
+    let key = line.slice(0, idx).trim();
+    let val = line.slice(idx+1).trim();
+    if(val.startsWith('"') && val.endsWith('"')){
+      val = val.slice(1,-1).replace(/""/g,'"');
+    }
+    map[key] = val;
+  });
+  return map;
+}
+
+(function initPetals(){
+  const wrap = document.getElementById('heroPhoto');
+  for(let i=0;i<6;i++){
+    const p = document.createElement('div');
+    p.className = 'petal';
+    p.style.left = (8 + Math.random()*84) + '%';
+    p.style.animationDuration = (4 + Math.random()*2).toFixed(1) + 's';
+    p.style.animationDelay = (Math.random()*4).toFixed(1) + 's';
+    wrap.appendChild(p);
+  }
+})();
+
+setTimeout(function(){
+  document.getElementById('intro').classList.add('hide');
+}, 3000);
+
+(function initDday(){
+  const target = new Date(CONFIG.weddingDateTime);
+  const today = new Date();
+  today.setHours(0,0,0,0);
+  const t0 = new Date(target.getFullYear(), target.getMonth(), target.getDate());
+  const diff = Math.round((t0 - today) / (1000*60*60*24));
+  const label = diff > 0 ? ('D-' + diff) : (diff === 0 ? 'D-DAY' : ('D+' + Math.abs(diff)));
+  document.getElementById('ddayNum').textContent = label;
+})();
+
+(function initCalendar(){
+  const target = new Date(CONFIG.weddingDateTime);
+  const year = target.getFullYear();
+  const month = target.getMonth();
+  const weddingDay = target.getDate();
+  const firstDow = new Date(year, month, 1).getDay();
+  const lastDate = new Date(year, month+1, 0).getDate();
+  const grid = document.getElementById('calGrid');
+  ['일','월','화','수','목','금','토'].forEach(function(d, idx){
+    const el = document.createElement('div');
+    el.className = 'cal-dow' + (idx===0 ? ' sun' : '');
+    el.textContent = d;
+    grid.appendChild(el);
+  });
+  for(let i=0;i<firstDow;i++){ grid.appendChild(document.createElement('div')); }
+  for(let d=1; d<=lastDate; d++){
+    const el = document.createElement('div');
+    if(d === weddingDay){
+      el.innerHTML = '<span class="cal-day d-day">'+d+'</span>';
+    } else {
+      el.className = 'cal-day';
+      el.textContent = d;
+    }
+    grid.appendChild(el);
+  }
+})();
+
+function renderGallery(photos){
+  const main = document.getElementById('galleryMain');
+  const more = document.getElementById('galleryMore');
+  const btn = document.getElementById('moreBtn');
+  main.innerHTML = '';
+  more.innerHTML = '';
+  photos.slice(0,6).forEach(function(src){
+    const img = document.createElement('img');
+    img.src = src;
+    main.appendChild(img);
+  });
+  if(photos.length > 6){
+    photos.slice(6,30).forEach(function(src){
+      const img = document.createElement('img');
+      img.src = src;
+      more.appendChild(img);
+    });
+    btn.style.display = 'block';
+  }
+}
+
+function renderFilmStrip(photos){
+  const strip = document.getElementById('filmStrip');
+  strip.innerHTML = '';
+  photos.forEach(function(src){
+    const card = document.createElement('div');
+    card.className = 'film-card';
+    const img = document.createElement('img');
+    img.src = src;
+    card.appendChild(img);
+    strip.appendChild(card);
+  });
+}
+
+function toggleGallery(){
+  const more = document.getElementById('galleryMore');
+  const btn = document.getElementById('moreBtn');
+  more.classList.toggle('show');
+  btn.textContent = more.classList.contains('show') ? '접기' : '더보기';
+}
+
+async function loadFromSheet(){
+  if(!CONFIG.sheetCsvUrl){ return; }
+  try{
+    const res = await fetch(CONFIG.sheetCsvUrl);
+    const text = await res.text();
+    const data = parseCSV(text);
+
+    if(data.main_photo){
+      const url = driveDirectUrl(data.main_photo);
+      document.getElementById('introImg').src = url;
+      document.getElementById('heroImg').src = url;
+    }
+
+    ['groom','groom_father','groom_mother','bride','bride_father','bride_mother'].forEach(function(key){
+      if(data[key]){
+        const el = document.getElementById('acc-' + key.replace(/_/g, '-'));
+        if(el) el.textContent = data[key];
+      }
+    });
+
+    const photos = [];
+    for(let i=1;i<=30;i++){
+      if(data['photo'+i]) photos.push(driveDirectUrl(data['photo'+i]));
+    }
+    if(photos.length) renderGallery(photos);
+
+    const filmPhotos = [];
+    for(let i=1;i<=30;i++){
+      if(data['film'+i]) filmPhotos.push(driveDirectUrl(data['film'+i]));
+    }
+    if(filmPhotos.length) renderFilmStrip(filmPhotos);
+  }catch(e){
+    console.error('구글 시트를 불러오지 못했습니다', e);
+  }
+}
+
+(function initFadeUp(){
+  const els = document.querySelectorAll('.fadeup');
+  const observer = new IntersectionObserver(function(entries){
+    entries.forEach(function(entry){
+      if(entry.isIntersecting){ entry.target.classList.add('show'); }
+    });
+  }, { threshold: 0.15 });
+  els.forEach(function(el){ observer.observe(el); });
+})();
+
+loadFromSheet();
+</script>
+</body>
+</html>
