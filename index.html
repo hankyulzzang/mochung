@@ -5,8 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>양희근 · 장한결 결혼합니다</title>
 
-<meta property="og:title" content="양희근 · 장한결 결혼합니다">
+<meta property="og:title" content="희근🤍한결 결혼합니다">
 <meta property="og:description" content="2026년 12월 19일 토요일 오후 6시 30분 | 라마다 서울 신도림 호텔">
+<meta property="og:image" content="https://lh3.googleusercontent.com/d/1r6-Y2MxAHDYhBZmJhmtKR7PRg7AwLstD">
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -325,7 +326,7 @@
     <p class="eyebrow fadeup">오시는 길</p>
     <p class="venue-name fadeup">라마다 서울 신도림 호텔</p>
     <p class="venue-addr fadeup">서울 구로구 경인로 624</p>
-    <a class="map-frame fadeup" href="https://map.naver.com/p/search/%EB%9D%BC%EB%A7%88%EB%8B%A4%20%EC%84%9C%EC%9A%B8%20%EC%8B%A0%EB%8F%84%EB%A6%BC%20%ED%98%B8%ED%85%94" target="_blank" rel="noopener">
+    <a class="map-frame fadeup" id="mapLink" href="https://map.naver.com/p/search/%EB%9D%BC%EB%A7%88%EB%8B%A4%20%EC%84%9C%EC%9A%B8%20%EC%8B%A0%EB%8F%84%EB%A6%BC%20%ED%98%B8%ED%85%94" target="_blank" rel="noopener">
       <div class="map-cta">
         <i class="map-pin">📍</i>
         <span>네이버지도에서 보기 · 길찾기</span>
@@ -382,10 +383,52 @@
    전부 시트에서 자동으로 불러와집니다.
    ========================================================= */
 const CONFIG = {
-  weddingDateTime: "2026-12-19T18:30:00+09:00",
+  // 시트를 못 불러왔을 때만 쓰는 기본값입니다. (달력 요일 계산은 이 값과 무관하게 항상 한국 기준으로 계산됩니다)
+  fallbackWedding: { year: 2026, month: 12, day: 19, hour: 18, minute: 30 },
   // 구글 시트를 "웹에 게시(Publish to web) > CSV" 한 링크를 여기 붙여넣으세요.
   sheetCsvUrl: "https://docs.google.com/spreadsheets/d/e/2PACX-1vR63GD_WIHKqczR9JzJ_dlWJOq1LB-1MHuMWFZSKEPWZRNVcBwaXs3oCynZbUWBA1MGZcV0k-yrQGzI/pub?gid=0&single=true&output=csv"
 };
+
+// 시트의 A열(키) 이름이 바뀌면 여기만 맞춰 고치면 됩니다.
+const SHEET_KEYS = {
+  weddingDate: '결혼식 날짜(00.00.00)',
+  weddingTime: '시간(00:00)',
+  venueMapLink: '결혼식장(네이버지도 링크 첨부)'
+};
+
+// "26.12.19" + "18:30" -> { year:2026, month:12, day:19, hour:18, minute:30 }
+// Date 객체(절대 시각) 대신 순수 달력 값으로 다뤄서, 방문자 기기의 시간대와 무관하게
+// 항상 "한국 기준 그 날짜/시간"으로 정확히 표시되게 합니다.
+function parseWeddingDateTime(dateStr, timeStr){
+  if(!dateStr) return null;
+  const parts = dateStr.split('.').map(function(s){ return s.trim(); }).filter(Boolean);
+  if(parts.length < 3) return null;
+  const yy = parts[0];
+  const year = yy.length === 4 ? parseInt(yy, 10) : (2000 + parseInt(yy, 10));
+  const month = parseInt(parts[1], 10);
+  const day = parseInt(parts[2], 10);
+  if(!year || !month || !day) return null;
+  const time = (timeStr && /^\d{1,2}:\d{2}$/.test(timeStr.trim())) ? timeStr.trim() : '00:00';
+  const timeParts = time.split(':');
+  return { year: year, month: month, day: day, hour: parseInt(timeParts[0], 10), minute: parseInt(timeParts[1], 10) };
+}
+
+// 순수 달력 값(year, 1~12월, day)의 요일을 방문자 시간대와 무관하게 계산합니다.
+function weekdayIndex(year, month, day){
+  return new Date(Date.UTC(year, month - 1, day)).getUTCDay();
+}
+
+// 방문자 기기 시간대와 무관하게 "한국 기준 오늘 날짜"를 구합니다.
+function todayInKST(){
+  const kst = new Date(Date.now() + 9 * 60 * 60 * 1000);
+  return { year: kst.getUTCFullYear(), month: kst.getUTCMonth() + 1, day: kst.getUTCDate() };
+}
+
+function daysBetween(a, b){
+  const t0 = Date.UTC(a.year, a.month - 1, a.day);
+  const t1 = Date.UTC(b.year, b.month - 1, b.day);
+  return Math.round((t1 - t0) / 86400000);
+}
 
 // 구글 드라이브 공유링크를 이미지로 바로 보이는 링크로 바꿔주는 함수
 function driveDirectUrl(url){
@@ -452,25 +495,31 @@ function playIntroCaptionThenHide(){
 
 setTimeout(hideIntro, INTRO_MAX_WAIT);
 
-(function initDday(){
-  const target = new Date(CONFIG.weddingDateTime);
-  const today = new Date();
-  today.setHours(0,0,0,0);
-  const t0 = new Date(target.getFullYear(), target.getMonth(), target.getDate());
-  const diff = Math.round((t0 - today) / (1000*60*60*24));
+const WEEKDAY_EN = ['SUN','MON','TUE','WED','THU','FRI','SAT'];
+const WEEKDAY_KR = ['일','월','화','수','목','금','토'];
+
+function formatTime12(hh, min){
+  hh = parseInt(hh, 10);
+  const period = hh >= 12 ? 'PM' : 'AM';
+  let h12 = hh % 12; if(h12 === 0) h12 = 12;
+  return h12 + ':' + min + ' ' + period;
+}
+
+function renderDday(wc){
+  const diff = daysBetween(todayInKST(), wc);
   const label = diff > 0 ? ('D-' + diff) : (diff === 0 ? 'D-DAY' : ('D+' + Math.abs(diff)));
   document.getElementById('ddayNum').textContent = label;
-})();
+}
 
-(function initCalendar(){
-  const target = new Date(CONFIG.weddingDateTime);
-  const year = target.getFullYear();
-  const month = target.getMonth();
-  const weddingDay = target.getDate();
-  const firstDow = new Date(year, month, 1).getDay();
-  const lastDate = new Date(year, month+1, 0).getDate();
+function renderCalendar(wc){
+  const year = wc.year;
+  const monthIndex = wc.month - 1;
+  const weddingDay = wc.day;
+  const firstDow = new Date(year, monthIndex, 1).getDay();
+  const lastDate = new Date(year, monthIndex + 1, 0).getDate();
   const grid = document.getElementById('calGrid');
-  ['일','월','화','수','목','금','토'].forEach(function(d, idx){
+  grid.innerHTML = '';
+  WEEKDAY_KR.forEach(function(d, idx){
     const el = document.createElement('div');
     el.className = 'cal-dow' + (idx===0 ? ' sun' : '');
     el.textContent = d;
@@ -487,7 +536,24 @@ setTimeout(hideIntro, INTRO_MAX_WAIT);
     }
     grid.appendChild(el);
   }
-})();
+}
+
+function renderWeddingDate(wc){
+  const wd = weekdayIndex(wc.year, wc.month, wc.day);
+  const hh = String(wc.hour).padStart(2,'0');
+  const min = String(wc.minute).padStart(2,'0');
+
+  document.querySelector('.date').textContent =
+    wc.year + '. ' + wc.month + '. ' + wc.day + ' ' + WEEKDAY_EN[wd] + ' ' + formatTime12(hh, min);
+  document.querySelector('.dday-date').textContent =
+    wc.year + '년 ' + wc.month + '월 ' + wc.day + '일 ' + WEEKDAY_KR[wd] + '요일';
+  document.querySelector('.cal-title').textContent = wc.year + '년 ' + wc.month + '월';
+
+  renderDday(wc);
+  renderCalendar(wc);
+}
+
+renderWeddingDate(CONFIG.fallbackWedding);
 
 function openLightbox(src){
   document.getElementById('lightboxImg').src = src;
@@ -553,8 +619,17 @@ async function loadFromSheet(){
     const text = await res.text();
     const data = parseCSV(text);
 
-    if(data.main_photo){
-      const url = driveDirectUrl(data.main_photo);
+    const parsedWedding = parseWeddingDateTime(data[SHEET_KEYS.weddingDate], data[SHEET_KEYS.weddingTime]);
+    if(parsedWedding){
+      renderWeddingDate(parsedWedding);
+    }
+
+    if(data[SHEET_KEYS.venueMapLink]){
+      document.getElementById('mapLink').href = data[SHEET_KEYS.venueMapLink];
+    }
+
+    if(data.main_photo1){
+      const url = driveDirectUrl(data.main_photo1);
       const introImg = document.getElementById('introImg');
       const introSpinner = document.getElementById('introSpinner');
       introImg.onload = function(){
@@ -568,10 +643,13 @@ async function loadFromSheet(){
         hideIntro();
       };
       introImg.src = url;
-      document.getElementById('heroImg').src = url;
     } else {
       // 대문사진이 설정되지 않은 경우 곧바로 넘어갑니다.
       hideIntro();
+    }
+
+    if(data.main_photo2){
+      document.getElementById('heroImg').src = driveDirectUrl(data.main_photo2);
     }
 
     if(data.greeting_photo){
