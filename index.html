@@ -324,8 +324,8 @@
 
   <section>
     <p class="eyebrow fadeup">오시는 길</p>
-    <p class="venue-name fadeup">라마다 서울 신도림 호텔</p>
-    <p class="venue-addr fadeup">서울 구로구 경인로 624</p>
+    <p class="venue-name fadeup" id="venueName">라마다 서울 신도림 호텔</p>
+    <p class="venue-addr fadeup" id="venueAddr">서울 구로구 경인로 624</p>
     <a class="map-frame fadeup" id="mapLink" href="https://map.naver.com/p/search/%EB%9D%BC%EB%A7%88%EB%8B%A4%20%EC%84%9C%EC%9A%B8%20%EC%8B%A0%EB%8F%84%EB%A6%BC%20%ED%98%B8%ED%85%94" target="_blank" rel="noopener">
       <div class="map-cta">
         <i class="map-pin">📍</i>
@@ -389,12 +389,24 @@ const CONFIG = {
   sheetCsvUrl: "https://docs.google.com/spreadsheets/d/e/2PACX-1vR63GD_WIHKqczR9JzJ_dlWJOq1LB-1MHuMWFZSKEPWZRNVcBwaXs3oCynZbUWBA1MGZcV0k-yrQGzI/pub?gid=0&single=true&output=csv"
 };
 
-// 시트의 A열(키) 이름이 바뀌면 여기만 맞춰 고치면 됩니다.
+// 시트 A열(키) 이름의 후보 목록입니다. 앞으로는 깔끔한 영문 키(wedding_date 등)를
+// 추천하지만, 지금 쓰고 계신 한글 라벨도 그대로 인식하도록 둘 다 등록해뒀습니다.
+// 즉, 시트의 컬럼명을 영문으로 바꾸셔도/안 바꾸셔도 자동으로 반영됩니다.
 const SHEET_KEYS = {
-  weddingDate: '결혼식 날짜(00.00.00)',
-  weddingTime: '시간(00:00)',
-  venueMapLink: '결혼식장(네이버지도 링크 첨부)'
+  weddingDate: ['wedding_date', '결혼식 날짜(00.00.00)', '결혼식 날짜'],
+  weddingTime: ['wedding_time', '시간(00:00)', '시간'],
+  venueMapLink: ['venue_map_link', '결혼식장(네이버지도 링크 첨부)', '결혼식장'],
+  venueName: ['venue_name', '결혼식장 이름'],
+  venueAddress: ['venue_address', '결혼식장 주소']
 };
+
+// data에서 SHEET_KEYS 후보 이름들을 순서대로 찾아 처음 값이 있는 걸 반환합니다.
+function pickField(data, keyList){
+  for(let i=0;i<keyList.length;i++){
+    if(data[keyList[i]]) return data[keyList[i]];
+  }
+  return null;
+}
 
 // "26.12.19" + "18:30" -> { year:2026, month:12, day:19, hour:18, minute:30 }
 // Date 객체(절대 시각) 대신 순수 달력 값으로 다뤄서, 방문자 기기의 시간대와 무관하게
@@ -619,13 +631,24 @@ async function loadFromSheet(){
     const text = await res.text();
     const data = parseCSV(text);
 
-    const parsedWedding = parseWeddingDateTime(data[SHEET_KEYS.weddingDate], data[SHEET_KEYS.weddingTime]);
+    const parsedWedding = parseWeddingDateTime(pickField(data, SHEET_KEYS.weddingDate), pickField(data, SHEET_KEYS.weddingTime));
     if(parsedWedding){
       renderWeddingDate(parsedWedding);
     }
 
-    if(data[SHEET_KEYS.venueMapLink]){
-      document.getElementById('mapLink').href = data[SHEET_KEYS.venueMapLink];
+    const venueMapLink = pickField(data, SHEET_KEYS.venueMapLink);
+    if(venueMapLink){
+      document.getElementById('mapLink').href = venueMapLink;
+    }
+
+    const venueName = pickField(data, SHEET_KEYS.venueName);
+    if(venueName){
+      document.getElementById('venueName').textContent = venueName;
+    }
+
+    const venueAddress = pickField(data, SHEET_KEYS.venueAddress);
+    if(venueAddress){
+      document.getElementById('venueAddr').textContent = venueAddress;
     }
 
     if(data.main_photo1){
