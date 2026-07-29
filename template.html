@@ -194,12 +194,13 @@
   .shuttle-title{ font-size:13px; margin:0 0 6px; }
   .shuttle-text{ color:var(--green-soft); font-size:12px; line-height:1.7; margin:0; }
 
-  .gallery-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:6px; }
-  .gallery-grid img, .gallery-more img{ width:100%; aspect-ratio:1; object-fit:cover; border-radius:4px; display:block; background:#EEF4F7; }
-  .gallery-more{ display:none; grid-template-columns:repeat(3,1fr); gap:6px; margin-top:6px; }
+  .gallery-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:0; margin:0 -28px; }
+  .gallery-grid img, .gallery-more img{ width:100%; aspect-ratio:1; object-fit:cover; border-radius:0; display:block; background:#EEF4F7; }
+  .gallery-more{ display:none; grid-template-columns:repeat(3,1fr); gap:0; margin:0 -28px; }
   .gallery-more.show{ display:grid; }
-  .more-btn{ margin-top:10px; width:100%; padding:10px; background:transparent; border:1px solid var(--gold-soft); border-radius:4px; color:var(--gold); font-family:'Nanum Myeongjo', serif; font-size:13px; cursor:pointer; }
+  .more-btn{ margin-top:14px; width:100%; padding:10px; background:transparent; border:1px solid var(--gold-soft); border-radius:4px; color:var(--gold); font-family:'Nanum Myeongjo', serif; font-size:13px; cursor:pointer; }
 
+  .acc-intro{ color:var(--green-soft); font-size:13px; line-height:1.9; margin:0 0 26px; }
   .acc-item{ border:1px solid var(--gold-soft); border-radius:6px; margin-bottom:8px; text-align:left; overflow:hidden; }
   .acc-summary{ padding:14px; font-size:13px; cursor:pointer; display:flex; justify-content:space-between; align-items:center; }
   .acc-summary::after{ content:'+'; color:var(--gold); font-size:16px; }
@@ -244,18 +245,18 @@
     position:fixed;
     inset:0;
     z-index:1000;
-    background:rgba(179, 224, 242, 0.97);
+    background:#F5EFE0;
     display:none;
     align-items:center;
     justify-content:center;
-    padding:24px;
   }
   #lightbox.show{ display:flex; }
-  #lightbox img{ max-width:100%; max-height:85vh; object-fit:contain; }
+  #lightbox img{ width:100%; height:100%; object-fit:contain; display:block; }
   #lightboxClose{
     position:absolute;
     top:20px;
     right:20px;
+    z-index:2;
     width:40px;
     height:40px;
     border-radius:50%;
@@ -265,6 +266,35 @@
     font-size:22px;
     line-height:1;
     cursor:pointer;
+  }
+  .lightbox-nav{
+    position:absolute;
+    top:50%;
+    transform:translateY(-50%);
+    z-index:2;
+    width:40px;
+    height:40px;
+    border-radius:50%;
+    background:rgba(255,255,255,0.85);
+    color:var(--green);
+    border:1px solid var(--gold-soft);
+    font-size:20px;
+    line-height:1;
+    cursor:pointer;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+  }
+  #lightboxPrev{ left:14px; }
+  #lightboxNext{ right:14px; }
+  #lightboxCounter{
+    position:absolute;
+    left:0; right:0; bottom:20px;
+    z-index:2;
+    text-align:center;
+    color:var(--green-soft);
+    font-size:13px;
+    letter-spacing:1px;
   }
 </style>
 </head>
@@ -347,6 +377,11 @@
 
   <section>
     <p class="eyebrow fadeup">마음 전하는 곳</p>
+    <p class="acc-intro fadeup">
+      멀리서도 축하의 마음을 전하고 싶으신 분들을 위해<br>
+      계좌번호를 안내드립니다.<br><br>
+      보내주시는 따뜻한 마음, 감사히 간직하겠습니다.
+    </p>
     <div class="acc-item fadeup" onclick="this.classList.toggle('open')">
       <div class="acc-summary">신랑측 계좌번호</div>
       <div class="acc-body">
@@ -374,7 +409,10 @@
 
 <div id="lightbox" onclick="closeLightbox(event)">
   <button id="lightboxClose" onclick="closeLightbox(event)">&times;</button>
+  <button id="lightboxPrev" class="lightbox-nav" onclick="stepLightbox(event,-1)">&lsaquo;</button>
+  <button id="lightboxNext" class="lightbox-nav" onclick="stepLightbox(event,1)">&rsaquo;</button>
   <img id="lightboxImg" src="" alt="확대 사진">
+  <p id="lightboxCounter"></p>
 </div>
 
 <script>
@@ -567,9 +605,23 @@ function renderWeddingDate(wc){
 
 renderWeddingDate(CONFIG.fallbackWedding);
 
-function openLightbox(src){
-  document.getElementById('lightboxImg').src = src;
+let galleryPhotos = [];
+let lightboxIndex = 0;
+
+function showLightboxPhoto(index){
+  lightboxIndex = ((index % galleryPhotos.length) + galleryPhotos.length) % galleryPhotos.length;
+  document.getElementById('lightboxImg').src = galleryPhotos[lightboxIndex];
+  document.getElementById('lightboxCounter').textContent = (lightboxIndex + 1) + ' / ' + galleryPhotos.length;
+}
+
+function openLightbox(index){
+  showLightboxPhoto(index);
   document.getElementById('lightbox').classList.add('show');
+}
+
+function stepLightbox(e, dir){
+  if(e) e.stopPropagation();
+  showLightboxPhoto(lightboxIndex + dir);
 }
 
 function closeLightbox(e){
@@ -578,24 +630,25 @@ function closeLightbox(e){
 }
 
 function renderGallery(photos){
+  galleryPhotos = photos;
   const main = document.getElementById('galleryMain');
   const more = document.getElementById('galleryMore');
   const btn = document.getElementById('moreBtn');
   main.innerHTML = '';
   more.innerHTML = '';
-  photos.slice(0,6).forEach(function(src){
+  photos.slice(0,6).forEach(function(src, idx){
     const img = document.createElement('img');
     img.src = src;
     img.loading = 'lazy';
-    img.onclick = function(){ openLightbox(src); };
+    img.onclick = function(){ openLightbox(idx); };
     main.appendChild(img);
   });
   if(photos.length > 6){
-    photos.slice(6,30).forEach(function(src){
+    photos.slice(6,30).forEach(function(src, idx){
       const img = document.createElement('img');
       img.src = src;
       img.loading = 'lazy';
-      img.onclick = function(){ openLightbox(src); };
+      img.onclick = function(){ openLightbox(idx + 6); };
       more.appendChild(img);
     });
     btn.style.display = 'block';
