@@ -423,7 +423,7 @@
     <div class="nav-row fadeup">
       <a class="nav-btn" id="mapLink" href="https://map.naver.com/p/search/%EB%9D%BC%EB%A7%88%EB%8B%A4%20%EC%84%9C%EC%9A%B8%20%EC%8B%A0%EB%8F%84%EB%A6%BC%20%ED%98%B8%ED%85%94" target="_blank" rel="noopener">네이버지도</a>
       <a class="nav-btn" id="kakaoMapLink" href="#" target="_blank" rel="noopener">카카오맵</a>
-      <a class="nav-btn" id="tmapLink" href="#" style="display:none;">티맵</a>
+      <a class="nav-btn" id="tmapLink" href="https://tmap.life/9648329d">티맵</a>
     </div>
     <div class="shuttle-box fadeup">
       <p class="shuttle-title">🚌 셔틀버스 안내 🚌</p>
@@ -546,8 +546,7 @@ const SHEET_KEYS = {
   venueName: ['venue_name', '결혼식장 이름'],
   venueHall: ['venue_hall', '홀 이름', '결혼식장 홀'],
   venueAddress: ['venue_address', '결혼식장 주소'],
-  venueLat: ['venue_lat', '위도'],
-  venueLng: ['venue_lng', '경도'],
+  venueTmapLink: ['venue_tmap_link', '티맵 링크'],
   mainMessage: ['main_message', '대표문구'],
   sharePhoto: ['share_photo', 'share'],
   kakaoPhoto: ['kakao_thumbnail_photo', '카톡전송 썸네일'],
@@ -896,12 +895,13 @@ async function loadFromSheet(){
       document.getElementById('kakaoMapLink').href = 'https://map.kakao.com/link/search/' + encodeURIComponent(venueName);
     }
 
-    // 티맵: 이름만으로 여는 방법이 공식적으로 없어서 위도/경도 좌표가 있어야만 버튼을 보여줍니다.
-    const venueLat = pickField(data, SHEET_KEYS.venueLat);
-    const venueLng = pickField(data, SHEET_KEYS.venueLng);
-    if(venueLat && venueLng){
+    // 티맵: 이름만으로 여는 공식적인 방법이 없어서, 티맵 앱에서 장소를 직접 "공유"해
+    // 만든 링크(tmap.life/...)를 씁니다. 앱이 있으면 앱으로, 없으면 대체 화면으로
+    // 티맵이 알아서 연결해줍니다.
+    const venueTmapLink = pickField(data, SHEET_KEYS.venueTmapLink);
+    if(venueTmapLink){
       const tmapBtn = document.getElementById('tmapLink');
-      tmapBtn.href = 'tmap://route?rGoName=' + encodeURIComponent(venueName || '결혼식장') + '&rGoX=' + venueLng + '&rGoY=' + venueLat;
+      tmapBtn.href = venueTmapLink;
       tmapBtn.style.display = '';
     }
 
