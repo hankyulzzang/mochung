@@ -730,15 +730,18 @@ function renderWeddingDate(wc){
 
 renderWeddingDate(CONFIG.fallbackWedding);
 
-// 카카오링크(카톡 공유하기) 카드용 날짜 문구: "2026년 12월 19일 토요일 오후 6시 30분"
-// 카카오링크 피드 템플릿은 og:description보다 글자 수 제한이 훨씬 넉넉해서
-// 축약하지 않고 그대로 씁니다.
+// 카카오링크(카톡 공유하기) 카드용 날짜 문구: "26.12.19(토) 18:30"
+// 카톡 채팅방 카드는 설명글을 2줄까지만 보여주고 그 이상은 "..."으로 잘라버려서,
+// 날짜를 길게 쓰면 그 자체로 2줄을 다 차지해 버려 장소가 보일 자리가 없어집니다.
+// 그래서 날짜는 한 줄에 딱 맞게 짧게 쓰고, 장소는 그 아래 줄(\n)에 둡니다.
 function formatKakaoDateLine(wc){
+  const yy = String(wc.year).slice(-2);
+  const mm = String(wc.month).padStart(2, '0');
+  const dd = String(wc.day).padStart(2, '0');
+  const hh = String(wc.hour).padStart(2, '0');
+  const min = String(wc.minute).padStart(2, '0');
   const wd = weekdayIndex(wc.year, wc.month, wc.day);
-  const period = wc.hour < 12 ? '오전' : '오후';
-  let h12 = wc.hour % 12; if(h12 === 0) h12 = 12;
-  const minText = wc.minute > 0 ? (' ' + wc.minute + '분') : '';
-  return wc.year + '년 ' + wc.month + '월 ' + wc.day + '일 ' + WEEKDAY_KR[wd] + '요일 ' + period + ' ' + h12 + '시' + minText;
+  return yy + '.' + mm + '.' + dd + '(' + WEEKDAY_KR[wd] + ') ' + hh + ':' + min;
 }
 
 let galleryPhotos = [];
