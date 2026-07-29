@@ -1018,10 +1018,10 @@ async function loadFromSheet(){
 
 function shareInvite(){
   // 카카오링크가 준비돼 있으면 우선 사용합니다: og:description과 달리 글자 수
-  // 제한이 넉넉해서 안 잘리고, 카드를 탭하면 바로 청첩장으로 이동합니다.
-  // (커스텀 buttons는 개인/비즈 인증 안 된 앱에서는 무시되고 카카오 기본
-  // 브랜딩("OO made by 닉네임")으로 대체되는 것으로 보여서 뺐습니다 - 카드
-  // 자체(사진/텍스트 영역)를 탭하면 link.mobileWebUrl로 이동합니다.)
+  // 제한이 넉넉해서 안 잘립니다. buttons를 뺐다가("모청 made by 닉네임" 브랜딩과
+  // 겹쳐 보여서) 다시 넣었습니다 - 빼도 그 브랜딩 표시는 그대로였고 tap도 여전히
+  // 안 됐던 걸 보면 buttons 유무가 원인이 아니었던 것으로 보입니다. 카카오 공식
+  // 문서 기준으로 버튼이 가장 안정적인 탭 동작 방식이라 이 형태로 유지합니다.
   if(window.Kakao && Kakao.isInitialized() && window.__kakaoShareMeta){
     const meta = window.__kakaoShareMeta;
     Kakao.Share.sendDefault({
@@ -1031,7 +1031,10 @@ function shareInvite(){
         description: meta.description,
         imageUrl: meta.imageUrl,
         link: { mobileWebUrl: location.href, webUrl: location.href }
-      }
+      },
+      buttons: [
+        { title: '청첩장 보기', link: { mobileWebUrl: location.href, webUrl: location.href } }
+      ]
     });
     return;
   }
