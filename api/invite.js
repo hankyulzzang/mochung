@@ -14,13 +14,14 @@ const SHEET_KEYS = {
   kakaoText: ['kakao_thumbnail_text', '썸네일 문구'],
   weddingDate: ['wedding_date', '결혼식 날짜(00.00.00)', '결혼식 날짜'],
   weddingTime: ['wedding_time', '시간(00:00)', '시간'],
-  venueName: ['venue_name', '결혼식장 이름']
+  venueName: ['venue_name', '결혼식장 이름'],
+  venueHall: ['venue_hall', '홀 이름', '결혼식장 홀']
 };
 
 // 시트/사진이 하나도 안 불러와질 때 쓰는 값. index.html의 원래 고정값과 동일합니다.
 const FALLBACK = {
   ogTitle: '희근🤍한결 결혼합니다',
-  ogDescription: '2026년 12월 19일 토요일 오후 6시 30분 | 라마다 서울 신도림 호텔',
+  ogDescription: '2026년 12월 19일 토요일 오후 6시 30분\n신도림 라마다 · 2층 그랜드홀',
   ogImage: 'https://lh3.googleusercontent.com/d/1r6-Y2MxAHDYhBZmJhmtKR7PRg7AwLstD'
 };
 
@@ -134,13 +135,15 @@ async function buildMeta(){
 
     const wedding = parseWeddingDateTime(pickField(data, SHEET_KEYS.weddingDate), pickField(data, SHEET_KEYS.weddingTime));
     const venueName = pickField(data, SHEET_KEYS.venueName);
+    const venueHall = pickField(data, SHEET_KEYS.venueHall);
+    const venueLine = venueName ? (venueName + (venueHall ? ' · ' + venueHall : '')) : null;
     if(wedding){
       const wd = weekdayIndex(wedding.year, wedding.month, wedding.day);
       const dateLine = wedding.year + '년 ' + wedding.month + '월 ' + wedding.day + '일 ' +
         WEEKDAY_KR[wd] + '요일 ' + formatKoreanTime(wedding.hour, wedding.minute);
-      meta.ogDescription = venueName ? (dateLine + ' | ' + venueName) : dateLine;
-    } else if(venueName){
-      meta.ogDescription = meta.ogDescription.replace(/\|.*$/, '| ' + venueName);
+      meta.ogDescription = venueLine ? (dateLine + '\n' + venueLine) : dateLine;
+    } else if(venueLine){
+      meta.ogDescription = meta.ogDescription.split('\n')[0] + '\n' + venueLine;
     }
   }catch(e){
     console.error('시트를 못 불러와서 기본 썸네일 값을 씁니다', e);
