@@ -550,7 +550,12 @@ const CONFIG = {
   //   3) 저장
   // 참고: "앱 설정 > 일반"의 "앱 대표 도메인"은 이것과 무관한 별개의 설정이라
   // 아무리 채워도 Kakao.Share 인증에는 영향이 없습니다. 헷갈리지 말 것.
-  kakaoJsKey: "95af2fbc5bfb334e867ed5d1c5f8c7fb"
+  kakaoJsKey: "95af2fbc5bfb334e867ed5d1c5f8c7fb",
+  // 카카오링크(Kakao.Share)에 넣는 링크는 JavaScript SDK 도메인에 등록한 주소와
+  // 한 글자도 다르면 안 되므로, location.href 대신 이 고정값을 씁니다
+  // (혹시 뒤에 슬래시나 다른 경로가 붙은 상태로 공유 버튼을 눌러도 항상 같은
+  // 주소로 카드가 만들어지게 하기 위함).
+  siteUrl: "https://mochung-five.vercel.app/"
 };
 
 if(window.Kakao && !Kakao.isInitialized()){
@@ -1030,10 +1035,10 @@ function shareInvite(){
         title: meta.title,
         description: meta.description,
         imageUrl: meta.imageUrl,
-        link: { mobileWebUrl: location.href, webUrl: location.href }
+        link: { mobileWebUrl: CONFIG.siteUrl, webUrl: CONFIG.siteUrl }
       },
       buttons: [
-        { title: '청첩장 보기', link: { mobileWebUrl: location.href, webUrl: location.href } }
+        { title: '청첩장 보기', link: { mobileWebUrl: CONFIG.siteUrl, webUrl: CONFIG.siteUrl } }
       ]
     });
     return;
