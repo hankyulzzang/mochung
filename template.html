@@ -16,7 +16,6 @@
 <link href="https://fonts.googleapis.com/css2?family=Gowun+Dodum&display=swap" rel="stylesheet">
 <link rel="preconnect" href="https://docs.google.com">
 <link rel="preconnect" href="https://lh3.googleusercontent.com" crossorigin>
-<script src="https://developers.kakao.com/sdk/js/kakao.js"></script>
 
 <style>
   :root{
@@ -538,29 +537,8 @@ const CONFIG = {
   // 시트를 못 불러왔을 때만 쓰는 기본값입니다. (달력 요일 계산은 이 값과 무관하게 항상 한국 기준으로 계산됩니다)
   fallbackWedding: { year: 2026, month: 12, day: 19, hour: 18, minute: 30 },
   // 구글 시트를 "웹에 게시(Publish to web) > CSV" 한 링크를 여기 붙여넣으세요.
-  sheetCsvUrl: "https://docs.google.com/spreadsheets/d/e/2PACX-1vR63GD_WIHKqczR9JzJ_dlWJOq1LB-1MHuMWFZSKEPWZRNVcBwaXs3oCynZbUWBA1MGZcV0k-yrQGzI/pub?gid=0&single=true&output=csv",
-  // 카카오 디벨로퍼스(developers.kakao.com) 앱 > "플랫폼 키" 메뉴(※ "일반"이 아님)의
-  // "JavaScript 키" 카드에 있는 값입니다.
-  //
-  // 이 키를 새로 만들거나 도메인이 바뀌면, 반드시 아래 순서로 도메인을 등록해야
-  // Kakao.Share가 동작합니다(안 하면 "잘못된 요청으로 인증에 실패" 에러가 남):
-  //   1) 앱 > 플랫폼 키 > "JavaScript 키" 카드 우측 ⋮ 메뉴 > 수정
-  //   2) "JavaScript SDK 도메인" 입력칸에 사이트 주소를 정확히 입력
-  //      (예: https://mochung-five.vercel.app, 끝에 슬래시 없이) 후 + 버튼으로 추가
-  //   3) 저장
-  // 참고: "앱 설정 > 일반"의 "앱 대표 도메인"은 이것과 무관한 별개의 설정이라
-  // 아무리 채워도 Kakao.Share 인증에는 영향이 없습니다. 헷갈리지 말 것.
-  kakaoJsKey: "95af2fbc5bfb334e867ed5d1c5f8c7fb",
-  // 카카오링크(Kakao.Share)에 넣는 링크는 JavaScript SDK 도메인에 등록한 주소와
-  // 한 글자도 다르면 안 되므로, location.href 대신 이 고정값을 씁니다
-  // (혹시 뒤에 슬래시나 다른 경로가 붙은 상태로 공유 버튼을 눌러도 항상 같은
-  // 주소로 카드가 만들어지게 하기 위함).
-  siteUrl: "https://mochung-five.vercel.app/"
+  sheetCsvUrl: "https://docs.google.com/spreadsheets/d/e/2PACX-1vR63GD_WIHKqczR9JzJ_dlWJOq1LB-1MHuMWFZSKEPWZRNVcBwaXs3oCynZbUWBA1MGZcV0k-yrQGzI/pub?gid=0&single=true&output=csv"
 };
-
-if(window.Kakao && !Kakao.isInitialized()){
-  Kakao.init(CONFIG.kakaoJsKey);
-}
 
 // 시트 A열(키) 이름의 후보 목록입니다. 앞으로는 깔끔한 영문 키(wedding_date 등)를
 // 추천하지만, 지금 쓰고 계신 한글 라벨도 그대로 인식하도록 둘 다 등록해뒀습니다.
@@ -573,8 +551,6 @@ const SHEET_KEYS = {
   venueHall: ['venue_hall', '홀 이름', '결혼식장 홀'],
   venueAddress: ['venue_address', '결혼식장 주소'],
   mainMessage: ['main_message', '대표문구'],
-  kakaoPhoto: ['kakao_thumbnail_photo', '카톡전송 썸네일'],
-  kakaoText: ['kakao_thumbnail_text', '썸네일 문구'],
   sharePhoto: ['share_photo', 'share']
 };
 
@@ -774,20 +750,6 @@ function renderWeddingDate(wc){
 
 renderWeddingDate(CONFIG.fallbackWedding);
 
-// 카카오링크(카톡 공유하기) 카드용 날짜 문구: "26.12.19(토) 18:30"
-// 카톡 채팅방 카드는 설명글을 2줄까지만 보여주고 그 이상은 "..."으로 잘라버려서,
-// 날짜를 길게 쓰면 그 자체로 2줄을 다 차지해 버려 장소가 보일 자리가 없어집니다.
-// 그래서 날짜는 한 줄에 딱 맞게 짧게 쓰고, 장소는 그 아래 줄(\n)에 둡니다.
-function formatKakaoDateLine(wc){
-  const yy = String(wc.year).slice(-2);
-  const mm = String(wc.month).padStart(2, '0');
-  const dd = String(wc.day).padStart(2, '0');
-  const hh = String(wc.hour).padStart(2, '0');
-  const min = String(wc.minute).padStart(2, '0');
-  const wd = weekdayIndex(wc.year, wc.month, wc.day);
-  return yy + '.' + mm + '.' + dd + '(' + WEEKDAY_KR[wd] + ') ' + hh + ':' + min;
-}
-
 let galleryPhotos = [];
 let lightboxIndex = 0;
 
@@ -940,16 +902,6 @@ async function loadFromSheet(){
       document.getElementById('greetingText').textContent = mainMessage;
     }
 
-    // 카카오톡 "공유하기" 버튼(Kakao.Share)에 쓸 제목/설명/사진을 미리 준비해둡니다.
-    const kakaoPhoto = pickField(data, SHEET_KEYS.kakaoPhoto);
-    const kakaoText = pickField(data, SHEET_KEYS.kakaoText);
-    const venueLine = venueName ? (venueName + (venueHall ? ' ' + venueHall : '')) : '';
-    window.__kakaoShareMeta = {
-      title: kakaoText || '희근 🤍 한결 결혼합니다',
-      description: (parsedWedding ? formatKakaoDateLine(parsedWedding) : '') + (venueLine ? '\n' + venueLine : ''),
-      imageUrl: kakaoPhoto ? driveDirectUrl(kakaoPhoto) : (data.main_photo1 ? driveDirectUrl(data.main_photo1) : '')
-    };
-
     // "공유하기" 섹션 배경사진: 시트의 share(또는 share_photo) 칸에 있는 사진으로 바로 반영됩니다.
     const sharePhoto = pickField(data, SHEET_KEYS.sharePhoto);
     if(sharePhoto){
@@ -1022,30 +974,14 @@ async function loadFromSheet(){
 })();
 
 function shareInvite(){
-  // 카카오링크(Kakao.Share)가 준비돼 있으면 우선 사용합니다.
-  // 진단 결과: 구글 주소로 테스트해도 안 열리고 "청첩장 보기" 버튼도 아예
-  // 렌더링이 안 되는 걸 확인했습니다 - 저희 사이트/코드 문제가 아니라, 카카오톡
-  // 채널이 연결 안 된 개인 앱이라 카카오링크의 인터랙티브 기능(버튼, 카드 탭)
-  // 자체가 막혀 있는 것으로 결론 내렸습니다. 카카오톡 채널을 연결하면 풀릴 수
-  // 있어 보이니, 연결 전까지는 이 카드가 예쁘게 보여도 실제로는 안 열린다는 걸
-  // 감안해주세요(하객에게 공유할 땐 안전하게 링크 복사/기본 공유를 쓰는 걸 권장).
-  if(window.Kakao && Kakao.isInitialized() && window.__kakaoShareMeta){
-    const meta = window.__kakaoShareMeta;
-    Kakao.Share.sendDefault({
-      objectType: 'feed',
-      content: {
-        title: meta.title,
-        description: meta.description,
-        imageUrl: meta.imageUrl,
-        link: { mobileWebUrl: CONFIG.siteUrl, webUrl: CONFIG.siteUrl }
-      },
-      buttons: [
-        { title: '청첩장 보기', link: { mobileWebUrl: CONFIG.siteUrl, webUrl: CONFIG.siteUrl } }
-      ]
-    });
-    return;
-  }
-
+  // 카카오링크(Kakao.Share)는 최종적으로 포기했습니다. 개인 카카오 앱 →
+  // 본인인증만으로 비즈 앱 전환까지 해봤지만("청첩장 보기" 버튼 렌더링, 카드
+  // 탭 모두 안 됨) 그래도 안 됐고, 그 다음 단계인 "카카오톡 채널 연결"은
+  // 실제 사업자 등록번호가 있어야만 신청할 수 있어서 개인은 진행이 불가능한
+  // 것을 확인했습니다. navigator.share(휴대폰 기본 공유창)만 사용합니다 -
+  // 카카오 앱 설정과 무관하게 항상 확실히 작동하고, 카톡으로 보내면 카톡이
+  // og:description(날짜/장소, 이미 축약해서 안 잘림)으로 자체 미리보기를
+  // 만들어줍니다.
   const shareData = {
     title: document.title,
     text: '희근 🤍 한결 결혼합니다',
