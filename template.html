@@ -1022,10 +1022,13 @@ async function loadFromSheet(){
 })();
 
 function shareInvite(){
-  // ⚠️ 임시 진단용: 탭해서 안 열리는 문제가 저희 사이트 때문인지, 카카오 앱
-  // 자체의 제약인지 가려보려고 목적지 링크를 잠깐 구글로 바꿔놓은 상태입니다.
-  // 테스트 끝나면 CONFIG.siteUrl로 반드시 되돌려야 합니다.
-  const DIAGNOSTIC_TEST_URL = "https://www.google.com";
+  // 카카오링크(Kakao.Share)가 준비돼 있으면 우선 사용합니다.
+  // 진단 결과: 구글 주소로 테스트해도 안 열리고 "청첩장 보기" 버튼도 아예
+  // 렌더링이 안 되는 걸 확인했습니다 - 저희 사이트/코드 문제가 아니라, 카카오톡
+  // 채널이 연결 안 된 개인 앱이라 카카오링크의 인터랙티브 기능(버튼, 카드 탭)
+  // 자체가 막혀 있는 것으로 결론 내렸습니다. 카카오톡 채널을 연결하면 풀릴 수
+  // 있어 보이니, 연결 전까지는 이 카드가 예쁘게 보여도 실제로는 안 열린다는 걸
+  // 감안해주세요(하객에게 공유할 땐 안전하게 링크 복사/기본 공유를 쓰는 걸 권장).
   if(window.Kakao && Kakao.isInitialized() && window.__kakaoShareMeta){
     const meta = window.__kakaoShareMeta;
     Kakao.Share.sendDefault({
@@ -1034,10 +1037,10 @@ function shareInvite(){
         title: meta.title,
         description: meta.description,
         imageUrl: meta.imageUrl,
-        link: { mobileWebUrl: DIAGNOSTIC_TEST_URL, webUrl: DIAGNOSTIC_TEST_URL }
+        link: { mobileWebUrl: CONFIG.siteUrl, webUrl: CONFIG.siteUrl }
       },
       buttons: [
-        { title: '청첩장 보기', link: { mobileWebUrl: DIAGNOSTIC_TEST_URL, webUrl: DIAGNOSTIC_TEST_URL } }
+        { title: '청첩장 보기', link: { mobileWebUrl: CONFIG.siteUrl, webUrl: CONFIG.siteUrl } }
       ]
     });
     return;
