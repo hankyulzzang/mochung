@@ -1022,28 +1022,11 @@ async function loadFromSheet(){
 })();
 
 function shareInvite(){
-  // 카카오링크가 준비돼 있으면 우선 사용합니다: og:description과 달리 글자 수
-  // 제한이 넉넉해서 안 잘립니다. buttons를 뺐다가("모청 made by 닉네임" 브랜딩과
-  // 겹쳐 보여서) 다시 넣었습니다 - 빼도 그 브랜딩 표시는 그대로였고 tap도 여전히
-  // 안 됐던 걸 보면 buttons 유무가 원인이 아니었던 것으로 보입니다. 카카오 공식
-  // 문서 기준으로 버튼이 가장 안정적인 탭 동작 방식이라 이 형태로 유지합니다.
-  if(window.Kakao && Kakao.isInitialized() && window.__kakaoShareMeta){
-    const meta = window.__kakaoShareMeta;
-    Kakao.Share.sendDefault({
-      objectType: 'feed',
-      content: {
-        title: meta.title,
-        description: meta.description,
-        imageUrl: meta.imageUrl,
-        link: { mobileWebUrl: CONFIG.siteUrl, webUrl: CONFIG.siteUrl }
-      },
-      buttons: [
-        { title: '청첩장 보기', link: { mobileWebUrl: CONFIG.siteUrl, webUrl: CONFIG.siteUrl } }
-      ]
-    });
-    return;
-  }
-
+  // 카카오링크(Kakao.Share)는 SDK 인증도 되고 카드도 정상 렌더링되는데 탭해서
+  // 여는 것만 계속 안 됐습니다 - 개인(비즈 인증 안 된) 카카오 앱의 알려진 제약으로
+  // 보여서, 항상 확실히 되는 navigator.share(휴대폰 기본 공유창)로 되돌립니다.
+  // 카톡으로 보내면 카톡이 og:description(날짜/장소, 이미 축약해서 안 잘림)으로
+  // 자체 미리보기를 만들어줍니다.
   const shareData = {
     title: document.title,
     text: '희근 🤍 한결 결혼합니다',
