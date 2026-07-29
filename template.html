@@ -1022,10 +1022,10 @@ async function loadFromSheet(){
 })();
 
 function shareInvite(){
-  // 카카오링크(Kakao.Share)가 준비돼 있으면 우선 사용합니다. 사진+제목+설명이
-  // 있는 카드와 "청첩장 보기" 버튼이 붙어서 navigator.share보다 훨씬 보기 좋습니다.
-  // (예전에 탭해서 열리지 않는 문제가 있었어요 - 카카오톡 채널 연결 여부와
-  // 관련된 것으로 추정 중입니다. 안 열리면 앱에 채널이 연결돼 있는지 확인해주세요.)
+  // ⚠️ 임시 진단용: 탭해서 안 열리는 문제가 저희 사이트 때문인지, 카카오 앱
+  // 자체의 제약인지 가려보려고 목적지 링크를 잠깐 구글로 바꿔놓은 상태입니다.
+  // 테스트 끝나면 CONFIG.siteUrl로 반드시 되돌려야 합니다.
+  const DIAGNOSTIC_TEST_URL = "https://www.google.com";
   if(window.Kakao && Kakao.isInitialized() && window.__kakaoShareMeta){
     const meta = window.__kakaoShareMeta;
     Kakao.Share.sendDefault({
@@ -1034,10 +1034,10 @@ function shareInvite(){
         title: meta.title,
         description: meta.description,
         imageUrl: meta.imageUrl,
-        link: { mobileWebUrl: CONFIG.siteUrl, webUrl: CONFIG.siteUrl }
+        link: { mobileWebUrl: DIAGNOSTIC_TEST_URL, webUrl: DIAGNOSTIC_TEST_URL }
       },
       buttons: [
-        { title: '청첩장 보기', link: { mobileWebUrl: CONFIG.siteUrl, webUrl: CONFIG.siteUrl } }
+        { title: '청첩장 보기', link: { mobileWebUrl: DIAGNOSTIC_TEST_URL, webUrl: DIAGNOSTIC_TEST_URL } }
       ]
     });
     return;
