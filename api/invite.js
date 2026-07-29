@@ -21,7 +21,7 @@ const SHEET_KEYS = {
 // 시트/사진이 하나도 안 불러와질 때 쓰는 값. index.html의 원래 고정값과 동일합니다.
 const FALLBACK = {
   ogTitle: '희근🤍한결 결혼합니다',
-  ogDescription: '26.12.19(토) 18:30 · 신도림 라마다 2층 그랜드홀',
+  ogDescription: '26.12.19 18:30 · 신도림 라마다 2층 그랜드홀',
   ogImage: 'https://lh3.googleusercontent.com/d/1r6-Y2MxAHDYhBZmJhmtKR7PRg7AwLstD'
 };
 
@@ -105,17 +105,17 @@ function weekdayIndex(year, month, day){
   return new Date(Date.UTC(year, month - 1, day)).getUTCDay();
 }
 
-// 카카오톡 링크 미리보기의 description은 대략 70바이트(한글 기준 20자 안팎)를
-// 넘으면 "..."으로 잘립니다. 그래서 여기서는 "오후 6시 30분" 같은 긴 표기 대신
-// "26.12.19(토) 18:30"처럼 최대한 압축된 표기를 씁니다.
+// 링크 미리보기 description은 카톡/아이메시지/사파리마다 잘리는 기준이
+// 다르고(바이트 수 제한도 있고, 2줄 넘으면 그냥 잘라버리는 경우도 있음),
+// 실제로 "26.12.19(토) 18:30 · 신도림 라마다 2층 그랜드홀"(63바이트)도
+// 잘렸던 걸 확인해서, 요일은 빼고 최대한 짧게 씁니다.
 function formatCompactDate(wedding){
   const yy = String(wedding.year).slice(-2);
   const mm = String(wedding.month).padStart(2, '0');
   const dd = String(wedding.day).padStart(2, '0');
   const hh = String(wedding.hour).padStart(2, '0');
   const min = String(wedding.minute).padStart(2, '0');
-  const wd = weekdayIndex(wedding.year, wedding.month, wedding.day);
-  return yy + '.' + mm + '.' + dd + '(' + WEEKDAY_KR[wd] + ') ' + hh + ':' + min;
+  return yy + '.' + mm + '.' + dd + ' ' + hh + ':' + min;
 }
 
 function escapeHtml(s){
@@ -143,7 +143,7 @@ async function buildMeta(){
     const wedding = parseWeddingDateTime(pickField(data, SHEET_KEYS.weddingDate), pickField(data, SHEET_KEYS.weddingTime));
     const venueName = pickField(data, SHEET_KEYS.venueName);
     const venueHall = pickField(data, SHEET_KEYS.venueHall);
-    const venueLine = venueName ? (venueName + (venueHall ? ' · ' + venueHall : '')) : null;
+    const venueLine = venueName ? (venueName + (venueHall ? ' ' + venueHall : '')) : null;
     if(wedding){
       const dateLine = formatCompactDate(wedding);
       meta.ogDescription = venueLine ? (dateLine + ' · ' + venueLine) : dateLine;
