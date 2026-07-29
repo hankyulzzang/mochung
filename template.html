@@ -17,6 +17,8 @@
 <link rel="preconnect" href="https://docs.google.com">
 <link rel="preconnect" href="https://lh3.googleusercontent.com" crossorigin>
 
+<script src="https://t1.kakaocdn.net/kakao_js_sdk/2.7.2/kakao.min.js" defer></script>
+
 <style>
   :root{
     --bg: #F7FAFC;
@@ -528,7 +530,12 @@ const CONFIG = {
   // 시트를 못 불러왔을 때만 쓰는 기본값입니다. (달력 요일 계산은 이 값과 무관하게 항상 한국 기준으로 계산됩니다)
   fallbackWedding: { year: 2026, month: 12, day: 19, hour: 18, minute: 30 },
   // 구글 시트를 "웹에 게시(Publish to web) > CSV" 한 링크를 여기 붙여넣으세요.
-  sheetCsvUrl: "https://docs.google.com/spreadsheets/d/e/2PACX-1vR63GD_WIHKqczR9JzJ_dlWJOq1LB-1MHuMWFZSKEPWZRNVcBwaXs3oCynZbUWBA1MGZcV0k-yrQGzI/pub?gid=0&single=true&output=csv"
+  sheetCsvUrl: "https://docs.google.com/spreadsheets/d/e/2PACX-1vR63GD_WIHKqczR9JzJ_dlWJOq1LB-1MHuMWFZSKEPWZRNVcBwaXs3oCynZbUWBA1MGZcV0k-yrQGzI/pub?gid=0&single=true&output=csv",
+  // 카카오 개발자 콘솔 > 앱 설정 > 앱 > 플랫폼 키 > JavaScript 키
+  kakaoJsKey: "95af2fbc5bfb334e867ed5d1c5f8c7fb",
+  // 카카오 개발자 콘솔 > 도구 > 메시지 템플릿에서 만든 "피드형" 커스텀 템플릿 ID
+  // (변수: THU=사진, title=제목, desc=본문 / 버튼 링크는 고정으로 이 사이트 주소를 가리킴)
+  kakaoTemplateId: 135773
 };
 
 // 시트 A열(키) 이름의 후보 목록입니다. 앞으로는 깔끔한 영문 키(wedding_date 등)를
@@ -542,7 +549,17 @@ const SHEET_KEYS = {
   venueHall: ['venue_hall', '홀 이름', '결혼식장 홀'],
   venueAddress: ['venue_address', '결혼식장 주소'],
   mainMessage: ['main_message', '대표문구'],
-  sharePhoto: ['share_photo', 'share']
+  sharePhoto: ['share_photo', 'share'],
+  kakaoPhoto: ['kakao_thumbnail_photo', '카톡전송 썸네일'],
+  kakaoText: ['kakao_thumbnail_text', '썸네일 문구']
+};
+
+// 카카오톡 공유(사용자 정의 템플릿) 카드에 채워 넣을 값. 시트를 못 불러왔을 때는
+// 이 기본값 그대로 공유됩니다.
+const kakaoShareData = {
+  THU: 'https://lh3.googleusercontent.com/d/1r6-Y2MxAHDYhBZmJhmtKR7PRg7AwLstD',
+  title: '희근🤍한결 결혼합니다',
+  desc: '신도림 라마다 2층 그랜드홀'
 };
 
 // data에서 SHEET_KEYS 후보 이름들을 순서대로 찾아 처음 값이 있는 걸 반환합니다.
@@ -888,6 +905,13 @@ async function loadFromSheet(){
       document.getElementById('venueAddr').textContent = venueAddress;
     }
 
+    // 카카오톡 공유 카드용 값 (venueName/venueHall은 위에서 이미 읽어둠)
+    const kakaoPhoto = pickField(data, SHEET_KEYS.kakaoPhoto);
+    if(kakaoPhoto) kakaoShareData.THU = driveDirectUrl(kakaoPhoto);
+    const kakaoText = pickField(data, SHEET_KEYS.kakaoText);
+    if(kakaoText) kakaoShareData.title = kakaoText;
+    if(venueName) kakaoShareData.desc = venueName + (venueHall ? ' ' + venueHall : '');
+
     const mainMessage = pickField(data, SHEET_KEYS.mainMessage);
     if(mainMessage){
       document.getElementById('greetingText').textContent = mainMessage;
@@ -964,12 +988,47 @@ async function loadFromSheet(){
   els.forEach(function(el){ observer.observe(el); });
 })();
 
-function shareInvite(){
-  // 카카오링크(Kakao.Share SDK)는 최종적으로 포기했습니다. 개인 카카오 앱 →
-  // 본인인증만으로 비즈 앱 전환까지 해봤지만("청첩장 보기" 버튼 렌더링, 카드
-  // 탭 모두 안 됨) 그래도 안 됐고, 그 다음 단계인 "카카오톡 채널 연결"은
-  // 실제 사업자 등록번호가 있어야만 신청할 수 있어서 개인은 진행이 불가능한
-  // 것을 확인했습니다.
+// window.Kakao가 아직 안 뜬 상태(스크립트 defer 로딩 중)일 수 있어 최대 4초간
+// 폴링하고, 뜨면 그때 Kakao.init을 한 번만 호출합니다.
+function ensureKakaoReady(){
+  return new Promise(function(resolve){
+    function tryInit(){
+      try{
+        if(!window.Kakao.isInitialized()) window.Kakao.init(CONFIG.kakaoJsKey);
+        resolve(true);
+      }catch(e){
+        resolve(false);
+      }
+    }
+    if(window.Kakao){ tryInit(); return; }
+    let tries = 0;
+    const iv = setInterval(function(){
+      tries++;
+      if(window.Kakao){ clearInterval(iv); tryInit(); }
+      else if(tries >= 40){ clearInterval(iv); resolve(false); }
+    }, 100);
+  });
+}
+
+async function shareInvite(){
+  // 카카오 개발자 콘솔의 "도구 > 메시지 템플릿"에서 만든 사용자 정의(피드형)
+  // 템플릿을 사용합니다. sendDefault의 인라인 Feed 템플릿과 달리, 이 방식은
+  // 비즈니스 인증/카카오톡 채널 연결이 전혀 필요 없습니다 (둘은 서로 다른 기능).
+  const kakaoOk = await ensureKakaoReady();
+  if(kakaoOk && window.Kakao.Share){
+    try{
+      window.Kakao.Share.sendCustom({
+        templateId: CONFIG.kakaoTemplateId,
+        templateArgs: kakaoShareData,
+        installTalk: true
+      });
+      return;
+    }catch(e){
+      console.error('카카오톡 공유 실패, 다른 방식으로 대체합니다', e);
+    }
+  }
+
+  // Kakao SDK 로딩/초기화가 실패한 경우에만 아래 대체 경로를 씁니다.
   const shareText = '희근 🤍 한결 결혼합니다';
   const shareUrl = location.href;
 
