@@ -501,8 +501,17 @@ const CONFIG = {
   fallbackWedding: { year: 2026, month: 12, day: 19, hour: 18, minute: 30 },
   // 구글 시트를 "웹에 게시(Publish to web) > CSV" 한 링크를 여기 붙여넣으세요.
   sheetCsvUrl: "https://docs.google.com/spreadsheets/d/e/2PACX-1vR63GD_WIHKqczR9JzJ_dlWJOq1LB-1MHuMWFZSKEPWZRNVcBwaXs3oCynZbUWBA1MGZcV0k-yrQGzI/pub?gid=0&single=true&output=csv",
-  // 카카오 디벨로퍼스(developers.kakao.com) > 내 애플리케이션 > 앱 설정 > 일반에서
-  // 확인할 수 있는 JavaScript 키입니다.
+  // 카카오 디벨로퍼스(developers.kakao.com) 앱 > "플랫폼 키" 메뉴(※ "일반"이 아님)의
+  // "JavaScript 키" 카드에 있는 값입니다.
+  //
+  // 이 키를 새로 만들거나 도메인이 바뀌면, 반드시 아래 순서로 도메인을 등록해야
+  // Kakao.Share가 동작합니다(안 하면 "잘못된 요청으로 인증에 실패" 에러가 남):
+  //   1) 앱 > 플랫폼 키 > "JavaScript 키" 카드 우측 ⋮ 메뉴 > 수정
+  //   2) "JavaScript SDK 도메인" 입력칸에 사이트 주소를 정확히 입력
+  //      (예: https://mochung-five.vercel.app, 끝에 슬래시 없이) 후 + 버튼으로 추가
+  //   3) 저장
+  // 참고: "앱 설정 > 일반"의 "앱 대표 도메인"은 이것과 무관한 별개의 설정이라
+  // 아무리 채워도 Kakao.Share 인증에는 영향이 없습니다. 헷갈리지 말 것.
   kakaoJsKey: "95af2fbc5bfb334e867ed5d1c5f8c7fb"
 };
 
