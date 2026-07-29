@@ -164,7 +164,7 @@
   }
   .names{ font-size:24px; font-weight:700; margin:0 0 8px; }
   .date{ color:var(--gold); font-size:14px; margin:0 0 6px; }
-  .venue-brief{ color:var(--green-soft); font-size:13px; margin:0 0 18px; }
+  .venue-brief{ color:var(--gold); font-size:14px; margin:0 0 18px; }
   .parents{ color:var(--green-soft); font-size:13px; line-height:1.8; margin:0; }
   .contact-row{ display:flex; gap:8px; margin-top:16px; }
   .contact-btn{ flex:1; display:flex; align-items:center; justify-content:center; gap:6px; padding:10px; border:1px solid var(--gold-soft); border-radius:4px; color:var(--green); font-size:12px; text-decoration:none; }
@@ -202,9 +202,9 @@
   .shuttle-title{ font-size:13px; margin:0 0 6px; }
   .shuttle-text{ color:var(--green-soft); font-size:12px; line-height:1.7; margin:0; }
 
-  .gallery-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:0; margin:0 -28px; }
+  .gallery-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:4px; margin:0 -28px; }
   .gallery-grid img, .gallery-more img{ width:100%; aspect-ratio:1; object-fit:cover; border-radius:0; display:block; background:#EEF4F7; }
-  .gallery-more{ display:none; grid-template-columns:repeat(3,1fr); gap:0; margin:0 -28px; }
+  .gallery-more{ display:none; grid-template-columns:repeat(3,1fr); gap:4px; margin:0 -28px; }
   .gallery-more.show{ display:grid; }
   .more-btn{ margin-top:14px; width:100%; padding:10px; background:transparent; border:1px solid var(--gold-soft); border-radius:4px; color:var(--gold); font-family:'Gowun Dodum', sans-serif; font-size:13px; cursor:pointer; }
 
@@ -277,6 +277,8 @@
   .share-btn-primary{ background:var(--gold); color:#FFFFFF; }
   .share-btn-secondary{ background:#FFFFFF; color:var(--green); }
 
+  .site-footer{ color:#B7C0BA; font-size:10px; line-height:1.7; text-align:center; padding:22px 28px 28px; margin:0; }
+
   .gallery-grid img, .gallery-more img{ cursor:pointer; }
   #lightbox{
     position:fixed;
@@ -334,7 +336,7 @@
     letter-spacing:1px;
   }
 
-  .music-fab, .share-fab{
+  .music-fab{
     position:fixed;
     z-index:40;
     width:44px;
@@ -346,8 +348,6 @@
     align-items:center;
     justify-content:center;
     font-size:18px;
-  }
-  .music-fab{
     top:16px;
     right:16px;
     background:#FFFFFF;
@@ -355,14 +355,6 @@
   }
   .music-fab .music-icon{ display:inline-block; }
   .music-fab.playing .music-icon{ animation: spin 3s linear infinite; }
-  .share-fab{
-    bottom:20px;
-    right:16px;
-    background:var(--green);
-    color:#FFFFFF;
-    border-color:var(--green);
-    box-shadow:0 4px 12px rgba(27,58,43,0.25);
-  }
 </style>
 </head>
 <body>
@@ -395,7 +387,7 @@
     <p class="names fadeup">양희근 · 장한결</p>
     <p class="date fadeup">2026. 12. 19 THU 6:30 PM</p>
     <p class="venue-brief fadeup" id="venueBrief">신도림 라마다 · 2층 그랜드홀</p>
-    <p class="parents fadeup">양문보 · 신이선의 장남 양희근<br>장남석 · 김은화의 장녀 장한결</p>
+    <p class="parents fadeup">양문보 · 신이선의 장남 <strong>양희근</strong><br>장남석 · 김은화의 장녀 <strong>장한결</strong></p>
     <div class="contact-row fadeup">
       <a class="contact-btn" href="tel:01040531912"><span class="contact-icon">📞</span> 신랑에게 연락하기</a>
       <a class="contact-btn" href="tel:01046536333"><span class="contact-icon">📞</span> 신부에게 연락하기</a>
@@ -453,9 +445,9 @@
   <section>
     <p class="eyebrow fadeup">마음 전하는 곳</p>
     <p class="acc-intro fadeup">
-      멀리서도 축하의 마음을 전하고 싶으신 분들을 위해<br>
-      계좌번호를 안내드립니다.<br><br>
-      보내주시는 따뜻한 마음, 감사히 간직하겠습니다.
+      멀리서도 마음을 전하고자 하시는 분들을 위해<br>
+      계좌번호를 안내드립니다.<br>
+      보내주시는 마음 감사히 간직하겠습니다.
     </p>
     <div class="acc-item fadeup" onclick="this.classList.toggle('open')">
       <div class="acc-summary">신랑측 계좌번호</div>
@@ -510,14 +502,13 @@
     </div>
   </div>
 
+  <p class="site-footer">이 모바일 청첩장은 신부가 머리를 싸매며 직접 ai로 만들었습니다.<br>혹시 이 멘트를 보신 분들은 신부에게 칭찬 한 마디씩 부탁드립니다^___^</p>
+
 </div>
 
 <div id="ytPlayer" style="position:fixed; width:1px; height:1px; top:-9999px; left:-9999px; overflow:hidden;"></div>
 <button id="musicToggle" class="music-fab" onclick="toggleMusic()" aria-label="배경음악 재생/정지">
   <span class="music-icon">&#9834;</span>
-</button>
-<button id="shareBtn" class="share-fab" onclick="shareInvite()" aria-label="청첩장 공유하기">
-  <span class="share-icon">&#8599;</span>
 </button>
 
 <div id="lightbox" onclick="closeLightbox(event)">
