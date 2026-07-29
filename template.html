@@ -965,28 +965,57 @@ async function loadFromSheet(){
 })();
 
 function shareInvite(){
-  // 카카오링크(Kakao.Share)는 최종적으로 포기했습니다. 개인 카카오 앱 →
+  // 카카오링크(Kakao.Share SDK)는 최종적으로 포기했습니다. 개인 카카오 앱 →
   // 본인인증만으로 비즈 앱 전환까지 해봤지만("청첩장 보기" 버튼 렌더링, 카드
   // 탭 모두 안 됨) 그래도 안 됐고, 그 다음 단계인 "카카오톡 채널 연결"은
   // 실제 사업자 등록번호가 있어야만 신청할 수 있어서 개인은 진행이 불가능한
-  // 것을 확인했습니다. navigator.share(휴대폰 기본 공유창)만 사용합니다 -
-  // 카카오 앱 설정과 무관하게 항상 확실히 작동하고, 카톡으로 보내면 카톡이
-  // og:description(날짜/장소, 이미 축약해서 안 잘림)으로 자체 미리보기를
-  // 만들어줍니다.
-  const shareData = {
-    title: document.title,
-    text: '희근 🤍 한결 결혼합니다',
-    url: location.href
-  };
+  // 것을 확인했습니다.
+  const shareText = '희근 🤍 한결 결혼합니다';
+  const shareUrl = location.href;
+
   if(navigator.share){
-    navigator.share(shareData).catch(function(){ /* 사용자가 취소한 경우 등은 무시 */ });
-  } else if(navigator.clipboard && navigator.clipboard.writeText){
-    navigator.clipboard.writeText(location.href).then(function(){
-      alert('청첩장 링크가 복사되었습니다.');
-    });
-  } else {
-    window.prompt('아래 링크를 복사해주세요', location.href);
+    // 휴대폰 기본 공유창: 카카오톡이 설치돼 있으면 목록에 카카오톡도 뜹니다.
+    navigator.share({ title: document.title, text: shareText, url: shareUrl })
+      .catch(function(){ /* 사용자가 취소한 경우 등은 무시 */ });
+    return;
   }
+
+  const copyLinkFallback = function(){
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(shareUrl).then(function(){
+        alert('청첩장 링크가 복사되었습니다.');
+      });
+    } else {
+      window.prompt('아래 링크를 복사해주세요', shareUrl);
+    }
+  };
+
+  // navigator.share가 없는 브라우저(카톡 인앱 브라우저 등)에서는, 안드로이드
+  // OS 표준 공유 인텐트(ACTION_SEND)를 카카오톡 패키지로 직접 호출해봅니다.
+  // Kakao Link SDK/API가 아니라 안드로이드 시스템 차원의 "다른 앱으로 텍스트
+  // 전달" 기능이라 카카오 쪽 비즈니스 인증과 무관하게 동작하지만, intent://
+  // 스킴 자체를 막아둔 인앱 브라우저에서는 여전히 실패할 수 있습니다 -
+  // 그런 경우엔 잠시 뒤 자동으로 링크 복사로 대체됩니다.
+  if(/Android/i.test(navigator.userAgent)){
+    const fullText = shareText + '\n' + shareUrl;
+    const intentUrl = 'intent://send#Intent;action=android.intent.action.SEND;' +
+      'type=text/plain;package=com.kakao.talk;' +
+      'S.android.intent.extra.TEXT=' + encodeURIComponent(fullText) + ';' +
+      'S.browser_fallback_url=' + encodeURIComponent(shareUrl) + ';end';
+
+    let handedOff = false;
+    document.addEventListener('visibilitychange', function onVis(){
+      if(document.visibilityState === 'hidden'){
+        handedOff = true; // 카카오톡으로 실제로 넘어간 것으로 보고 복사 대체를 취소
+        document.removeEventListener('visibilitychange', onVis);
+      }
+    });
+    window.location.href = intentUrl;
+    setTimeout(function(){ if(!handedOff) copyLinkFallback(); }, 1200);
+    return;
+  }
+
+  copyLinkFallback();
 }
 
 function copyInviteLink(e){
