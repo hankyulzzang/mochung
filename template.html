@@ -1022,11 +1022,27 @@ async function loadFromSheet(){
 })();
 
 function shareInvite(){
-  // 카카오링크(Kakao.Share)는 SDK 인증도 되고 카드도 정상 렌더링되는데 탭해서
-  // 여는 것만 계속 안 됐습니다 - 개인(비즈 인증 안 된) 카카오 앱의 알려진 제약으로
-  // 보여서, 항상 확실히 되는 navigator.share(휴대폰 기본 공유창)로 되돌립니다.
-  // 카톡으로 보내면 카톡이 og:description(날짜/장소, 이미 축약해서 안 잘림)으로
-  // 자체 미리보기를 만들어줍니다.
+  // 카카오링크(Kakao.Share)가 준비돼 있으면 우선 사용합니다. 사진+제목+설명이
+  // 있는 카드와 "청첩장 보기" 버튼이 붙어서 navigator.share보다 훨씬 보기 좋습니다.
+  // (예전에 탭해서 열리지 않는 문제가 있었어요 - 카카오톡 채널 연결 여부와
+  // 관련된 것으로 추정 중입니다. 안 열리면 앱에 채널이 연결돼 있는지 확인해주세요.)
+  if(window.Kakao && Kakao.isInitialized() && window.__kakaoShareMeta){
+    const meta = window.__kakaoShareMeta;
+    Kakao.Share.sendDefault({
+      objectType: 'feed',
+      content: {
+        title: meta.title,
+        description: meta.description,
+        imageUrl: meta.imageUrl,
+        link: { mobileWebUrl: CONFIG.siteUrl, webUrl: CONFIG.siteUrl }
+      },
+      buttons: [
+        { title: '청첩장 보기', link: { mobileWebUrl: CONFIG.siteUrl, webUrl: CONFIG.siteUrl } }
+      ]
+    });
+    return;
+  }
+
   const shareData = {
     title: document.title,
     text: '희근 🤍 한결 결혼합니다',
