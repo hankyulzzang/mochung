@@ -166,8 +166,9 @@ module.exports = async (req, res) => {
     .replace('{{OG_IMAGE}}', escapeHtml(meta.ogImage));
 
   res.setHeader('Content-Type', 'text/html; charset=utf-8');
-  // 카톡 등 크롤러가 매번 시트를 새로 읽지 않도록 CDN에서 1시간 캐시하되,
+  // 카톡 등 크롤러가 매번 시트를 새로 읽지 않도록 CDN에서 짧게만 캐시하고,
   // 캐시가 오래되면 백그라운드로 새로고침합니다(방문자는 항상 즉시 응답을 받음).
-  res.setHeader('Cache-Control', 's-maxage=3600, stale-while-revalidate=600');
+  // 썸네일 문구/사진을 시트에서 자주 수정하며 확인하는 중이라 짧게 잡아뒀습니다.
+  res.setHeader('Cache-Control', 's-maxage=60, stale-while-revalidate=30');
   res.status(200).send(html);
 };
