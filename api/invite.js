@@ -26,19 +26,48 @@ const FALLBACK = {
 
 const WEEKDAY_KR = ['일','월','화','수','목','금','토'];
 
+// 시트 셀 안에 줄바꿈(대표문구처럼 여러 줄인 값)이 들어있으면 CSV에서
+// 따옴표로 묶인 값 내부에 실제 개행문자가 그대로 들어옵니다. 그래서 줄 단위로
+// 쪼개는 방식이 아니라, 따옴표 안/밖을 구분하는 파서로 처리해야 안 깨집니다.
 function parseCSV(text){
+  text = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
   const map = {};
-  text.split(/\r?\n/).forEach(function(line){
-    if(!line.trim()) return;
-    const idx = line.indexOf(',');
-    if(idx === -1) return;
-    let key = line.slice(0, idx).trim();
-    let val = line.slice(idx+1).trim();
-    if(val.startsWith('"') && val.endsWith('"')){
-      val = val.slice(1,-1).replace(/""/g,'"');
+  let i = 0;
+  const len = text.length;
+  while(i < len){
+    const keyStart = i;
+    while(i < len && text[i] !== ',' && text[i] !== '\n') i++;
+    if(text[i] !== ','){
+      while(i < len && text[i] !== '\n') i++;
+      i++;
+      continue;
     }
-    map[key] = val;
-  });
+    const key = text.slice(keyStart, i).trim();
+    i++; // comma
+
+    let val = '';
+    if(text[i] === '"'){
+      i++;
+      while(i < len){
+        if(text[i] === '"'){
+          if(text[i+1] === '"'){ val += '"'; i += 2; continue; }
+          i++;
+          break;
+        }
+        val += text[i];
+        i++;
+      }
+      while(i < len && text[i] !== '\n') i++;
+      i++;
+    } else {
+      const valStart = i;
+      while(i < len && text[i] !== '\n') i++;
+      val = text.slice(valStart, i);
+      i++;
+    }
+
+    if(key) map[key] = val.trim();
+  }
   return map;
 }
 

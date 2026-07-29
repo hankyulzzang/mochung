@@ -169,7 +169,7 @@
   .contact-btn{ flex:1; display:flex; align-items:center; justify-content:center; gap:6px; padding:10px; border:1px solid var(--gold-soft); border-radius:4px; color:var(--green); font-size:12px; text-decoration:none; }
   .contact-icon{ font-size:13px; }
 
-  .greeting{ font-size:14px; line-height:2; color:var(--green); margin:0; }
+  .greeting{ font-size:14px; line-height:2; color:var(--green); margin:0; white-space:pre-line; }
   .greeting-photo{
     width:68%;
     max-width:240px;
@@ -377,12 +377,10 @@
     <div class="greeting-photo fadeup" id="greetingPhotoWrap">
       <img id="greetingImg" alt="">
     </div>
-    <p class="greeting fadeup">
-      두 사람이 하나 되는 약속의 자리에<br>
-      소중한 분들을 초대합니다.<br>
-      귀한 걸음 하시어 축복해 주시면<br>
-      더없는 기쁨이겠습니다.
-    </p>
+    <p class="greeting fadeup" id="greetingText">두 사람이 하나 되는 약속의 자리에
+소중한 분들을 초대합니다.
+귀한 걸음 하시어 축복해 주시면
+더없는 기쁨이겠습니다.</p>
   </section>
 
   <section>
@@ -511,8 +509,9 @@ const SHEET_KEYS = {
   weddingTime: ['wedding_time', '시간(00:00)', '시간'],
   venueMapLink: ['venue_map_link', '결혼식장(네이버지도 링크 첨부)', '결혼식장'],
   venueName: ['venue_name', '결혼식장 이름'],
-  venueHall: ['venue_hall', '결혼식장 홀'],
-  venueAddress: ['venue_address', '결혼식장 주소']
+  venueHall: ['venue_hall', '홀 이름', '결혼식장 홀'],
+  venueAddress: ['venue_address', '결혼식장 주소'],
+  mainMessage: ['main_message', '대표문구']
 };
 
 // data에서 SHEET_KEYS 후보 이름들을 순서대로 찾아 처음 값이 있는 걸 반환합니다.
@@ -565,19 +564,48 @@ function driveDirectUrl(url){
   return url;
 }
 
+// 시트 셀 안에 줄바꿈(대표문구처럼 여러 줄인 값)이 들어있으면 CSV에서
+// 따옴표로 묶인 값 내부에 실제 개행문자가 그대로 들어옵니다. 그래서 줄 단위로
+// 쪼개는 방식이 아니라, 따옴표 안/밖을 구분하는 파서로 처리해야 안 깨집니다.
 function parseCSV(text){
+  text = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
   const map = {};
-  text.split(/\r?\n/).forEach(function(line){
-    if(!line.trim()) return;
-    const idx = line.indexOf(',');
-    if(idx === -1) return;
-    let key = line.slice(0, idx).trim();
-    let val = line.slice(idx+1).trim();
-    if(val.startsWith('"') && val.endsWith('"')){
-      val = val.slice(1,-1).replace(/""/g,'"');
+  let i = 0;
+  const len = text.length;
+  while(i < len){
+    const keyStart = i;
+    while(i < len && text[i] !== ',' && text[i] !== '\n') i++;
+    if(text[i] !== ','){
+      while(i < len && text[i] !== '\n') i++;
+      i++;
+      continue;
     }
-    map[key] = val;
-  });
+    const key = text.slice(keyStart, i).trim();
+    i++; // comma
+
+    let val = '';
+    if(text[i] === '"'){
+      i++;
+      while(i < len){
+        if(text[i] === '"'){
+          if(text[i+1] === '"'){ val += '"'; i += 2; continue; }
+          i++;
+          break;
+        }
+        val += text[i];
+        i++;
+      }
+      while(i < len && text[i] !== '\n') i++;
+      i++;
+    } else {
+      const valStart = i;
+      while(i < len && text[i] !== '\n') i++;
+      val = text.slice(valStart, i);
+      i++;
+    }
+
+    if(key) map[key] = val.trim();
+  }
   return map;
 }
 
@@ -801,14 +829,20 @@ async function loadFromSheet(){
       renderWeddingDate(parsedWedding);
     }
 
-    const venueMapLink = pickField(data, SHEET_KEYS.venueMapLink);
-    if(venueMapLink){
-      document.getElementById('mapLink').href = venueMapLink;
-    }
-
     const venueName = pickField(data, SHEET_KEYS.venueName);
     if(venueName){
       document.getElementById('venueName').textContent = venueName;
+    }
+
+    // 지도 링크: 정확한 링크(venue_map_link)를 주시면 그걸 쓰고,
+    // 안 주시면 결혼식장 이름으로 지도 검색 링크를 자동으로 만듭니다.
+    const venueMapLink = pickField(data, SHEET_KEYS.venueMapLink);
+    if(venueMapLink){
+      document.getElementById('mapLink').href = venueMapLink;
+    } else if(venueName){
+      document.getElementById('mapLink').href = 'https://map.naver.com/p/search/' + encodeURIComponent(venueName);
+    }
+    if(venueName){
       document.getElementById('kakaoMapLink').href = 'https://map.kakao.com/?q=' + encodeURIComponent(venueName);
     }
 
@@ -820,6 +854,11 @@ async function loadFromSheet(){
     const venueAddress = pickField(data, SHEET_KEYS.venueAddress);
     if(venueAddress){
       document.getElementById('venueAddr').textContent = venueAddress;
+    }
+
+    const mainMessage = pickField(data, SHEET_KEYS.mainMessage);
+    if(mainMessage){
+      document.getElementById('greetingText').textContent = mainMessage;
     }
 
     if(data.main_photo1){
@@ -904,9 +943,11 @@ function shareInvite(){
 
 /* =========================================================
    배경음악: 유튜브 IFrame API로 재생합니다.
-   기본은 꺼진 상태이며, 방문자가 우측 상단 버튼을 눌러야 재생됩니다
-   (브라우저가 소리 있는 자동재생을 막기 때문에, 오히려 이 방식이
-   가장 확실하게 동작합니다).
+   청첩장을 열자마자 재생을 시도하고, 브라우저가 소리 있는 자동재생을
+   막아서 실패하면(대부분의 모바일 브라우저가 그렇습니다) 화면에서
+   처음 발생하는 탭/스크롤을 감지해 그 즉시 재생합니다. 그래서 실제로는
+   여는 순간 ~ 첫 터치 사이, 거의 바로 재생됩니다. 우측 상단 버튼으로도
+   언제든 켜고 끌 수 있습니다.
    ========================================================= */
 const BG_MUSIC_VIDEO_ID = 'prTlJcipGbo';
 let ytPlayer = null;
@@ -917,14 +958,18 @@ function onYouTubeIframeAPIReady(){
   ytPlayer = new YT.Player('ytPlayer', {
     videoId: BG_MUSIC_VIDEO_ID,
     playerVars: {
-      autoplay: 0,
+      autoplay: 1,
       controls: 0,
       loop: 1,
       playlist: BG_MUSIC_VIDEO_ID,
       playsinline: 1
     },
     events: {
-      onReady: function(){ ytReady = true; },
+      onReady: function(){
+        ytReady = true;
+        ytPlayer.playVideo();
+        bindFirstInteractionAutoplay();
+      },
       onStateChange: function(evt){
         if(evt.data === YT.PlayerState.PLAYING){ musicPlaying = true; updateMusicButton(); }
         else if(evt.data === YT.PlayerState.PAUSED){ musicPlaying = false; updateMusicButton(); }
@@ -941,6 +986,24 @@ function updateMusicButton(){
 function toggleMusic(){
   if(!ytReady || !ytPlayer) return;
   if(musicPlaying){ ytPlayer.pauseVideo(); } else { ytPlayer.playVideo(); }
+}
+
+// 브라우저가 소리 있는 자동재생을 막은 경우, 화면에서 처음 일어나는
+// 탭/스크롤에 맞춰 바로 재생을 시도합니다(사용자 동작 없이는 재생이
+// 불가능한 브라우저 정책을 우회하는 가장 확실한 방법입니다).
+let firstInteractionBound = false;
+function bindFirstInteractionAutoplay(){
+  if(firstInteractionBound) return;
+  firstInteractionBound = true;
+  const startOnce = function(){
+    if(!musicPlaying && ytReady && ytPlayer){ ytPlayer.playVideo(); }
+    document.removeEventListener('click', startOnce);
+    document.removeEventListener('touchstart', startOnce);
+    document.removeEventListener('scroll', startOnce);
+  };
+  document.addEventListener('click', startOnce, { once:true, passive:true });
+  document.addEventListener('touchstart', startOnce, { once:true, passive:true });
+  document.addEventListener('scroll', startOnce, { once:true, passive:true });
 }
 
 loadFromSheet();
