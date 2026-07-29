@@ -9,6 +9,8 @@
 <meta property="og:description" content="{{OG_DESCRIPTION}}">
 <meta property="og:image" content="{{OG_IMAGE}}">
 
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%A4%8D%3C/text%3E%3C/svg%3E">
+
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@400;700;800&display=swap" rel="stylesheet">
@@ -163,6 +165,9 @@
   .names{ font-size:24px; font-weight:700; margin:0 0 8px; }
   .date{ color:var(--gold); font-size:14px; margin:0 0 18px; }
   .parents{ color:var(--green-soft); font-size:13px; line-height:1.8; margin:0; }
+  .contact-row{ display:flex; gap:8px; margin-top:16px; }
+  .contact-btn{ flex:1; display:flex; align-items:center; justify-content:center; gap:6px; padding:10px; border:1px solid var(--gold-soft); border-radius:4px; color:var(--green); font-size:12px; text-decoration:none; }
+  .contact-icon{ font-size:13px; }
 
   .greeting{ font-size:14px; line-height:2; color:var(--green); margin:0; }
   .greeting-photo{
@@ -186,6 +191,7 @@
   .cal-day.d-day{ background:var(--gold); color:#fff; border-radius:50%; width:24px; height:24px; display:flex; align-items:center; justify-content:center; margin:0 auto; }
 
   .venue-name{ font-size:15px; margin:0 0 4px; }
+  .venue-hall{ color:var(--gold); font-size:12px; margin:0 0 4px; }
   .venue-addr{ color:var(--green-soft); font-size:13px; margin:0 0 16px; }
   .map-frame{ display:block; width:100%; border-radius:6px; overflow:hidden; border:1px solid var(--gold-soft); margin-bottom:16px; text-decoration:none; }
   .map-cta{ display:flex; align-items:center; justify-content:center; gap:8px; padding:22px 10px; background:#EEF4F7; color:var(--green); font-size:13px; }
@@ -206,11 +212,14 @@
   .acc-summary::after{ content:'+'; color:var(--gold); font-size:16px; }
   .acc-item.open .acc-summary::after{ content:'−'; }
   .acc-body{ max-height:0; overflow:hidden; transition:max-height 0.3s ease; padding:0 14px; }
-  .acc-item.open .acc-body{ max-height:200px; padding:0 14px 14px; }
-  .acc-row{ display:flex; justify-content:space-between; padding:6px 0; border-top:1px solid #EDEAE0; font-size:12px; }
+  .acc-item.open .acc-body{ max-height:280px; padding:0 14px 14px; }
+  .acc-row{ display:flex; justify-content:space-between; align-items:center; gap:10px; padding:10px 0; border-top:1px solid #EDEAE0; }
   .acc-row:first-child{ border-top:none; }
-  .acc-label{ color:var(--green-soft); }
-  .acc-value{ color:var(--green); }
+  .acc-info{ display:flex; flex-direction:column; gap:3px; min-width:0; }
+  .acc-label{ color:var(--green-soft); font-size:11px; }
+  .acc-value{ color:var(--green); font-size:13px; }
+  .acc-copy{ flex:0 0 auto; padding:6px 12px; border:1px solid var(--gold-soft); border-radius:4px; background:#FFFFFF; color:var(--gold); font-family:'Nanum Myeongjo', serif; font-size:12px; cursor:pointer; }
+  .acc-copy.copied{ background:var(--gold); color:#FFFFFF; border-color:var(--gold); }
 
   .film-section{ padding:44px 0; text-align:center; }
   .film-strip{
@@ -296,6 +305,36 @@
     font-size:13px;
     letter-spacing:1px;
   }
+
+  .music-fab, .share-fab{
+    position:fixed;
+    z-index:40;
+    width:44px;
+    height:44px;
+    border-radius:50%;
+    border:1px solid var(--gold-soft);
+    cursor:pointer;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:18px;
+  }
+  .music-fab{
+    top:16px;
+    right:16px;
+    background:#FFFFFF;
+    color:var(--gold);
+  }
+  .music-fab .music-icon{ display:inline-block; }
+  .music-fab.playing .music-icon{ animation: spin 3s linear infinite; }
+  .share-fab{
+    bottom:20px;
+    right:16px;
+    background:var(--green);
+    color:#FFFFFF;
+    border-color:var(--green);
+    box-shadow:0 4px 12px rgba(27,58,43,0.25);
+  }
 </style>
 </head>
 <body>
@@ -328,6 +367,10 @@
     <p class="names fadeup">양희근 · 장한결</p>
     <p class="date fadeup">2026. 12. 19 THU 6:30 PM</p>
     <p class="parents fadeup">양문보 · 신이선의 장남 양희근<br>장남석 · 김은화의 장녀 장한결</p>
+    <div class="contact-row fadeup">
+      <a class="contact-btn" href="tel:01040531912"><span class="contact-icon">📞</span> 신랑에게 연락하기</a>
+      <a class="contact-btn" href="tel:01046536333"><span class="contact-icon">📞</span> 신부에게 연락하기</a>
+    </div>
   </section>
 
   <section>
@@ -355,11 +398,18 @@
   <section>
     <p class="eyebrow fadeup">오시는 길</p>
     <p class="venue-name fadeup" id="venueName">라마다 서울 신도림 호텔</p>
+    <p class="venue-hall fadeup" id="venueHall">2층 그랜드볼룸</p>
     <p class="venue-addr fadeup" id="venueAddr">서울 구로구 경인로 624</p>
     <a class="map-frame fadeup" id="mapLink" href="https://map.naver.com/p/search/%EB%9D%BC%EB%A7%88%EB%8B%A4%20%EC%84%9C%EC%9A%B8%20%EC%8B%A0%EB%8F%84%EB%A6%BC%20%ED%98%B8%ED%85%94" target="_blank" rel="noopener">
       <div class="map-cta">
         <i class="map-pin">📍</i>
         <span>네이버지도에서 보기 · 길찾기</span>
+      </div>
+    </a>
+    <a class="map-frame fadeup" id="kakaoMapLink" href="https://map.kakao.com/?q=%EB%9D%BC%EB%A7%88%EB%8B%A4%20%EC%84%9C%EC%9A%B8%20%EC%8B%A0%EB%8F%84%EB%A6%BC%20%ED%98%B8%ED%85%94" target="_blank" rel="noopener">
+      <div class="map-cta">
+        <i class="map-pin">📍</i>
+        <span>카카오맵에서 보기 · 길찾기</span>
       </div>
     </a>
     <div class="shuttle-box fadeup">
@@ -385,17 +435,35 @@
     <div class="acc-item fadeup" onclick="this.classList.toggle('open')">
       <div class="acc-summary">신랑측 계좌번호</div>
       <div class="acc-body">
-        <div class="acc-row"><span class="acc-label">신랑</span><span class="acc-value" id="acc-groom">계좌번호 준비중</span></div>
-        <div class="acc-row"><span class="acc-label">신랑 아버지</span><span class="acc-value" id="acc-groom-father">계좌번호 준비중</span></div>
-        <div class="acc-row"><span class="acc-label">신랑 어머니</span><span class="acc-value" id="acc-groom-mother">계좌번호 준비중</span></div>
+        <div class="acc-row">
+          <div class="acc-info"><span class="acc-label">신랑</span><span class="acc-value" id="acc-groom">계좌번호 준비중</span></div>
+          <button class="acc-copy" type="button" onclick="copyAccount(event,'acc-groom')">복사</button>
+        </div>
+        <div class="acc-row">
+          <div class="acc-info"><span class="acc-label">신랑 아버지</span><span class="acc-value" id="acc-groom-father">계좌번호 준비중</span></div>
+          <button class="acc-copy" type="button" onclick="copyAccount(event,'acc-groom-father')">복사</button>
+        </div>
+        <div class="acc-row">
+          <div class="acc-info"><span class="acc-label">신랑 어머니</span><span class="acc-value" id="acc-groom-mother">계좌번호 준비중</span></div>
+          <button class="acc-copy" type="button" onclick="copyAccount(event,'acc-groom-mother')">복사</button>
+        </div>
       </div>
     </div>
     <div class="acc-item fadeup" onclick="this.classList.toggle('open')">
       <div class="acc-summary">신부측 계좌번호</div>
       <div class="acc-body">
-        <div class="acc-row"><span class="acc-label">신부</span><span class="acc-value" id="acc-bride">계좌번호 준비중</span></div>
-        <div class="acc-row"><span class="acc-label">신부 아버지</span><span class="acc-value" id="acc-bride-father">계좌번호 준비중</span></div>
-        <div class="acc-row"><span class="acc-label">신부 어머니</span><span class="acc-value" id="acc-bride-mother">계좌번호 준비중</span></div>
+        <div class="acc-row">
+          <div class="acc-info"><span class="acc-label">신부</span><span class="acc-value" id="acc-bride">계좌번호 준비중</span></div>
+          <button class="acc-copy" type="button" onclick="copyAccount(event,'acc-bride')">복사</button>
+        </div>
+        <div class="acc-row">
+          <div class="acc-info"><span class="acc-label">신부 아버지</span><span class="acc-value" id="acc-bride-father">계좌번호 준비중</span></div>
+          <button class="acc-copy" type="button" onclick="copyAccount(event,'acc-bride-father')">복사</button>
+        </div>
+        <div class="acc-row">
+          <div class="acc-info"><span class="acc-label">신부 어머니</span><span class="acc-value" id="acc-bride-mother">계좌번호 준비중</span></div>
+          <button class="acc-copy" type="button" onclick="copyAccount(event,'acc-bride-mother')">복사</button>
+        </div>
       </div>
     </div>
   </section>
@@ -406,6 +474,14 @@
   </section>
 
 </div>
+
+<div id="ytPlayer" style="position:fixed; width:1px; height:1px; top:-9999px; left:-9999px; overflow:hidden;"></div>
+<button id="musicToggle" class="music-fab" onclick="toggleMusic()" aria-label="배경음악 재생/정지">
+  <span class="music-icon">&#9834;</span>
+</button>
+<button id="shareBtn" class="share-fab" onclick="shareInvite()" aria-label="청첩장 공유하기">
+  <span class="share-icon">&#8599;</span>
+</button>
 
 <div id="lightbox" onclick="closeLightbox(event)">
   <button id="lightboxClose" onclick="closeLightbox(event)">&times;</button>
@@ -435,6 +511,7 @@ const SHEET_KEYS = {
   weddingTime: ['wedding_time', '시간(00:00)', '시간'],
   venueMapLink: ['venue_map_link', '결혼식장(네이버지도 링크 첨부)', '결혼식장'],
   venueName: ['venue_name', '결혼식장 이름'],
+  venueHall: ['venue_hall', '결혼식장 홀'],
   venueAddress: ['venue_address', '결혼식장 주소']
 };
 
@@ -677,6 +754,41 @@ function toggleGallery(){
   btn.textContent = more.classList.contains('show') ? '접기' : '더보기';
 }
 
+function fallbackCopyText(text){
+  const ta = document.createElement('textarea');
+  ta.value = text;
+  ta.style.position = 'fixed';
+  ta.style.left = '-9999px';
+  document.body.appendChild(ta);
+  ta.select();
+  try{ document.execCommand('copy'); }catch(err){ /* 복사 실패 시 조용히 무시 */ }
+  document.body.removeChild(ta);
+}
+
+function copyAccount(e, id){
+  if(e) e.stopPropagation(); // 카드가 열림/닫힘 토글되지 않도록
+  const btn = e.currentTarget;
+  const text = document.getElementById(id).textContent;
+  const showCopied = function(){
+    const original = btn.textContent;
+    btn.textContent = '복사됨';
+    btn.classList.add('copied');
+    setTimeout(function(){
+      btn.textContent = original;
+      btn.classList.remove('copied');
+    }, 1500);
+  };
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(text).then(showCopied).catch(function(){
+      fallbackCopyText(text);
+      showCopied();
+    });
+  } else {
+    fallbackCopyText(text);
+    showCopied();
+  }
+}
+
 async function loadFromSheet(){
   if(!CONFIG.sheetCsvUrl){ hideIntro(); return; }
   try{
@@ -697,6 +809,12 @@ async function loadFromSheet(){
     const venueName = pickField(data, SHEET_KEYS.venueName);
     if(venueName){
       document.getElementById('venueName').textContent = venueName;
+      document.getElementById('kakaoMapLink').href = 'https://map.kakao.com/?q=' + encodeURIComponent(venueName);
+    }
+
+    const venueHall = pickField(data, SHEET_KEYS.venueHall);
+    if(venueHall){
+      document.getElementById('venueHall').textContent = venueHall;
     }
 
     const venueAddress = pickField(data, SHEET_KEYS.venueAddress);
@@ -767,7 +885,66 @@ async function loadFromSheet(){
   els.forEach(function(el){ observer.observe(el); });
 })();
 
+function shareInvite(){
+  const shareData = {
+    title: document.title,
+    text: '희근 🤍 한결 결혼합니다',
+    url: location.href
+  };
+  if(navigator.share){
+    navigator.share(shareData).catch(function(){ /* 사용자가 취소한 경우 등은 무시 */ });
+  } else if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(location.href).then(function(){
+      alert('청첩장 링크가 복사되었습니다.');
+    });
+  } else {
+    window.prompt('아래 링크를 복사해주세요', location.href);
+  }
+}
+
+/* =========================================================
+   배경음악: 유튜브 IFrame API로 재생합니다.
+   기본은 꺼진 상태이며, 방문자가 우측 상단 버튼을 눌러야 재생됩니다
+   (브라우저가 소리 있는 자동재생을 막기 때문에, 오히려 이 방식이
+   가장 확실하게 동작합니다).
+   ========================================================= */
+const BG_MUSIC_VIDEO_ID = 'prTlJcipGbo';
+let ytPlayer = null;
+let ytReady = false;
+let musicPlaying = false;
+
+function onYouTubeIframeAPIReady(){
+  ytPlayer = new YT.Player('ytPlayer', {
+    videoId: BG_MUSIC_VIDEO_ID,
+    playerVars: {
+      autoplay: 0,
+      controls: 0,
+      loop: 1,
+      playlist: BG_MUSIC_VIDEO_ID,
+      playsinline: 1
+    },
+    events: {
+      onReady: function(){ ytReady = true; },
+      onStateChange: function(evt){
+        if(evt.data === YT.PlayerState.PLAYING){ musicPlaying = true; updateMusicButton(); }
+        else if(evt.data === YT.PlayerState.PAUSED){ musicPlaying = false; updateMusicButton(); }
+      }
+    }
+  });
+}
+
+function updateMusicButton(){
+  const btn = document.getElementById('musicToggle');
+  if(btn) btn.classList.toggle('playing', musicPlaying);
+}
+
+function toggleMusic(){
+  if(!ytReady || !ytPlayer) return;
+  if(musicPlaying){ ytPlayer.pauseVideo(); } else { ytPlayer.playVideo(); }
+}
+
 loadFromSheet();
 </script>
+<script src="https://www.youtube.com/iframe_api"></script>
 </body>
 </html>
