@@ -219,7 +219,32 @@
 
   .baby-film-wrap{ overflow:hidden; margin:0 -28px; }
   .baby-film-track{ display:flex; width:max-content; animation:babyFilmScroll 34s linear infinite; }
-  .baby-film-frame{ flex:0 0 auto; width:130px; box-sizing:border-box; padding:8px; margin-right:2px; background:#FFFFFF; }
+  .baby-film-frame{ position:relative; flex:0 0 auto; width:130px; box-sizing:border-box; padding:13px 3px; margin-right:2px; background:#B7C0C6; }
+  .baby-film-frame::before, .baby-film-frame::after{
+    content:'';
+    position:absolute;
+    left:0; right:0;
+    height:13px;
+    background-image: radial-gradient(circle, var(--bg) 3px, transparent 3.2px);
+    background-size:16px 100%;
+    background-position:6px center;
+    background-repeat:repeat-x;
+  }
+  .baby-film-frame::before{ top:0; }
+  .baby-film-frame::after{ bottom:0; }
+  .baby-film-date{
+    position:absolute;
+    bottom:1px;
+    left:50%;
+    transform:translateX(-50%);
+    z-index:1;
+    font-size:7px;
+    letter-spacing:0.5px;
+    color:#6B7378;
+    background:var(--bg);
+    padding:0 4px;
+    white-space:nowrap;
+  }
   .baby-film-frame img{ width:100%; aspect-ratio:3/4; object-fit:cover; display:block; cursor:pointer; background:#EEF4F7; }
   @keyframes babyFilmScroll{ from{ transform:translateX(0); } to{ transform:translateX(-50%); } }
 
@@ -882,6 +907,13 @@ function renderBabyFilm(photos){
     img.loading = 'lazy';
     img.onclick = function(){ openLightbox(i % photos.length, babyGalleryPhotos); };
     frame.appendChild(img);
+    if(i % 2 === 0){
+      // 실제 필름에 인화 날짜가 찍혀있는 것처럼, 적당한 간격(두 프레임마다)으로 넣습니다.
+      const date = document.createElement('span');
+      date.className = 'baby-film-date';
+      date.textContent = '2026.12.19.';
+      frame.appendChild(date);
+    }
     track.appendChild(frame);
   });
 }
