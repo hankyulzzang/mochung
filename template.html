@@ -944,14 +944,19 @@ function renderBabyFilm(photos){
 
   let paused = false;
   let resumeTimer = null;
+  let resumeAt = 0; // 다시 흐르기 시작한 시각(ms) - 이후 램프업 진행도 계산용
   let pos = wrap.scrollLeft; // scrollLeft는 정수로 반올림돼서 읽히기 때문에, 0.4px 같은
                              // 소수점 이동량은 이 변수에 직접 누적해야 실제로 움직입니다.
   const SPEED = 0.4; // px / frame, 느린 속도
+  const RAMP_MS = 1000; // 다시 시작할 때 이 시간 동안 서서히 속도를 올림
 
   function pauseThenResume(){
     paused = true;
     clearTimeout(resumeTimer);
-    resumeTimer = setTimeout(function(){ paused = false; }, 2500);
+    resumeTimer = setTimeout(function(){
+      paused = false;
+      resumeAt = performance.now();
+    }, 500);
   }
   wrap.addEventListener('touchstart', pauseThenResume, { passive:true });
   wrap.addEventListener('mousedown', pauseThenResume);
@@ -963,7 +968,8 @@ function renderBabyFilm(photos){
     } else {
       const half = track.scrollWidth / 2; // 사진 목록을 두 번 이어붙여놨으니 절반 지점에서 되감음
       if(half > 0){
-        pos += SPEED;
+        const rampProgress = Math.min(1, (performance.now() - resumeAt) / RAMP_MS);
+        pos += SPEED * rampProgress; // 멈췄다 다시 흐를 때 뚝 튀지 않고 서서히 가속
         if(pos >= half){
           pos -= half;
         }
