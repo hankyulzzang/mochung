@@ -210,6 +210,20 @@
   .gallery-more.show{ display:grid; }
   .more-btn{ margin-top:14px; width:100%; padding:10px; background:transparent; border:1px solid var(--gold-soft); border-radius:4px; color:var(--gold); font-family:'Gowun Dodum', sans-serif; font-size:14px; cursor:pointer; }
 
+  .flower-intro{ color:var(--green-soft); font-size:14px; line-height:1.9; margin:0 0 26px; }
+  .flower-faces{ display:flex; justify-content:center; gap:36px; margin-bottom:30px; }
+  .flower-face-item{ display:flex; flex-direction:column; align-items:center; }
+  .flower-face-img{ height:160px; width:auto; max-width:140px; object-fit:contain; filter:drop-shadow(0 8px 14px rgba(60,50,45,0.28)); }
+  .flower-face-name{ margin:12px 0 0; font-size:14px; font-weight:700; }
+  .flower-face-name-orange{ color:var(--gold); }
+  .flower-face-name-green{ color:var(--green); }
+
+  .baby-film-wrap{ overflow:hidden; margin:0 -28px; }
+  .baby-film-track{ display:flex; width:max-content; animation:babyFilmScroll 34s linear infinite; }
+  .baby-film-frame{ flex:0 0 auto; width:130px; box-sizing:border-box; padding:8px; margin-right:2px; background:#FFFFFF; }
+  .baby-film-frame img{ width:100%; aspect-ratio:3/4; object-fit:cover; display:block; cursor:pointer; background:#EEF4F7; }
+  @keyframes babyFilmScroll{ from{ transform:translateX(0); } to{ transform:translateX(-50%); } }
+
   .acc-intro{ color:var(--green-soft); font-size:14px; line-height:1.9; margin:0 0 26px; }
   .acc-item{ border:1px solid var(--gold-soft); border-radius:6px; margin-bottom:8px; text-align:left; overflow:hidden; }
   .acc-summary{ padding:14px; font-size:14px; cursor:pointer; display:flex; justify-content:space-between; align-items:center; }
@@ -444,6 +458,24 @@
   </section>
 
   <section>
+    <p class="eyebrow fadeup">화동 소개</p>
+    <p class="flower-intro fadeup" id="flowerGirlMessage">신부의 귀여운 조카들이 화동 역할을 할 예정입니다.</p>
+    <div class="flower-faces fadeup">
+      <div class="flower-face-item">
+        <img class="flower-face-img" id="babyFace1" alt="">
+        <p class="flower-face-name flower-face-name-orange">하늘</p>
+      </div>
+      <div class="flower-face-item">
+        <img class="flower-face-img" id="babyFace2" alt="">
+        <p class="flower-face-name flower-face-name-green">바다</p>
+      </div>
+    </div>
+    <div class="baby-film-wrap fadeup">
+      <div class="baby-film-track" id="babyFilmTrack"></div>
+    </div>
+  </section>
+
+  <section>
     <p class="eyebrow fadeup">마음 전하는 곳</p>
     <p class="acc-intro fadeup">
       멀리서도 마음을 전하고자 하시는 분들을 위해<br>
@@ -548,6 +580,7 @@ const SHEET_KEYS = {
   venueHall: ['venue_hall', '홀 이름', '결혼식장 홀'],
   venueAddress: ['venue_address', '결혼식장 주소'],
   venueTmapLink: ['venue_tmap_link', '티맵 링크'],
+  flowerGirlMessage: ['flower_girl_message', '화동 멘트'],
   mainMessage: ['main_message', '대표문구'],
   sharePhoto: ['share_photo', 'share'],
   kakaoPhoto: ['kakao_thumbnail_photo', '카톡전송 썸네일'],
@@ -767,7 +800,8 @@ function showLightboxPhoto(index){
   document.getElementById('lightboxCounter').textContent = (lightboxIndex + 1) + ' / ' + galleryPhotos.length;
 }
 
-function openLightbox(index){
+function openLightbox(index, photos){
+  if(photos) galleryPhotos = photos; // 다른 갤러리(화동 갤러리 등)에서 열 때는 그 목록으로 바꿔서 이전/다음이 그 안에서만 움직이게 함
   showLightboxPhoto(index);
   document.getElementById('lightbox').classList.add('show');
 }
@@ -806,6 +840,25 @@ function renderGallery(photos){
     });
     btn.style.display = 'block';
   }
+}
+
+let babyGalleryPhotos = [];
+
+function renderBabyFilm(photos){
+  babyGalleryPhotos = photos;
+  const track = document.getElementById('babyFilmTrack');
+  track.innerHTML = '';
+  const looped = photos.concat(photos); // 이어붙여서 끊김 없이 왼쪽으로 계속 흐르게 함
+  looped.forEach(function(src, i){
+    const frame = document.createElement('div');
+    frame.className = 'baby-film-frame';
+    const img = document.createElement('img');
+    img.src = src;
+    img.loading = 'lazy';
+    img.onclick = function(){ openLightbox(i % photos.length, babyGalleryPhotos); };
+    frame.appendChild(img);
+    track.appendChild(frame);
+  });
 }
 
 function renderFilmStrip(photos){
@@ -986,6 +1039,20 @@ async function loadFromSheet(){
       if(data['film'+i]) filmPhotos.push(driveDirectUrl(data['film'+i]));
     }
     if(filmPhotos.length) renderFilmStrip(filmPhotos);
+
+    if(data.babyface1) document.getElementById('babyFace1').src = driveDirectUrl(data.babyface1);
+    if(data.babyface2) document.getElementById('babyFace2').src = driveDirectUrl(data.babyface2);
+
+    const flowerGirlMessage = pickField(data, SHEET_KEYS.flowerGirlMessage);
+    if(flowerGirlMessage){
+      document.getElementById('flowerGirlMessage').textContent = flowerGirlMessage;
+    }
+
+    const babyPhotos = [];
+    for(let i=1;i<=30;i++){
+      if(data['babyphoto'+i]) babyPhotos.push(driveDirectUrl(data['babyphoto'+i]));
+    }
+    if(babyPhotos.length) renderBabyFilm(babyPhotos);
   }catch(e){
     console.error('구글 시트를 불러오지 못했습니다', e);
     document.getElementById('introSpinner').classList.add('hide');
