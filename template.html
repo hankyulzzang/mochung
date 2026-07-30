@@ -1041,7 +1041,9 @@ function copyAccount(e, id){
 async function loadFromSheet(){
   if(!CONFIG.sheetCsvUrl){ hideIntro(); return; }
   try{
-    const res = await fetch(CONFIG.sheetCsvUrl);
+    // 브라우저가 시트 CSV 응답을 캐시해서 방문할 때마다 옛날 내용을 보여주는 일이
+    // 없도록, 매번 다른 주소로 요청하고 캐시를 아예 안 쓰게 합니다.
+    const res = await fetch(CONFIG.sheetCsvUrl + '&_=' + Date.now(), { cache: 'no-store' });
     const text = await res.text();
     const data = parseCSV(text);
 
