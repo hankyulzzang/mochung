@@ -217,8 +217,9 @@
   #babyFace2{ height:140px; }
   .flower-face-name{ margin:12px 0 0; font-size:14px; font-weight:700; color:var(--gold); }
 
-  .baby-film-wrap{ overflow:hidden; margin:0 -28px; }
-  .baby-film-track{ display:flex; width:max-content; animation:babyFilmScroll 34s linear infinite; }
+  .baby-film-wrap{ overflow-x:auto; overflow-y:hidden; margin:0 -28px; -webkit-overflow-scrolling:touch; scrollbar-width:none; }
+  .baby-film-wrap::-webkit-scrollbar{ display:none; }
+  .baby-film-track{ display:flex; width:max-content; }
   .baby-film-frame{ position:relative; flex:0 0 auto; width:130px; box-sizing:border-box; padding:13px 3px; background:#B7C0C6; }
   .baby-film-frame::before, .baby-film-frame::after{
     content:'';
@@ -244,7 +245,6 @@
     white-space:nowrap;
   }
   .baby-film-frame img{ width:100%; aspect-ratio:3/4; object-fit:cover; display:block; cursor:pointer; background:#EEF4F7; }
-  @keyframes babyFilmScroll{ from{ transform:translateX(0); } to{ transform:translateX(-50%); } }
 
   .acc-intro{ color:var(--green-soft); font-size:14px; line-height:1.9; margin:0 0 26px; }
   .acc-item{ border:1px solid var(--gold-soft); border-radius:6px; margin-bottom:8px; text-align:left; overflow:hidden; }
@@ -518,7 +518,7 @@
         <p class="flower-face-name">바다</p>
       </div>
     </div>
-    <div class="baby-film-wrap fadeup">
+    <div class="baby-film-wrap fadeup" id="babyFilmWrap">
       <div class="baby-film-track" id="babyFilmTrack"></div>
     </div>
   </section>
@@ -915,6 +915,46 @@ function renderBabyFilm(photos){
     track.appendChild(frame);
   });
 }
+
+// 화동 필름 갤러리: 평소엔 왼쪽으로 천천히 자동으로 흐르다가, 사용자가 직접 옆으로
+// 밀면(터치/드래그/휠) 그 스크롤을 그대로 따라가고, 잠시 후 다시 자동으로 흐릅니다.
+(function initBabyFilmAutoScroll(){
+  const wrap = document.getElementById('babyFilmWrap');
+  const track = document.getElementById('babyFilmTrack');
+  if(!wrap || !track) return;
+
+  let paused = false;
+  let resumeTimer = null;
+  let pos = wrap.scrollLeft; // scrollLeft는 정수로 반올림돼서 읽히기 때문에, 0.4px 같은
+                             // 소수점 이동량은 이 변수에 직접 누적해야 실제로 움직입니다.
+  const SPEED = 0.4; // px / frame, 느린 속도
+
+  function pauseThenResume(){
+    paused = true;
+    clearTimeout(resumeTimer);
+    resumeTimer = setTimeout(function(){ paused = false; }, 2500);
+  }
+  wrap.addEventListener('touchstart', pauseThenResume, { passive:true });
+  wrap.addEventListener('mousedown', pauseThenResume);
+  wrap.addEventListener('wheel', pauseThenResume, { passive:true });
+
+  function tick(){
+    if(paused){
+      pos = wrap.scrollLeft; // 사용자가 직접 밀어서 옮겨놓은 위치로 계속 맞춰둠
+    } else {
+      const half = track.scrollWidth / 2; // 사진 목록을 두 번 이어붙여놨으니 절반 지점에서 되감음
+      if(half > 0){
+        pos += SPEED;
+        if(pos >= half){
+          pos -= half;
+        }
+        wrap.scrollLeft = pos;
+      }
+    }
+    requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+})();
 
 function renderFilmStrip(photos){
   const strip = document.getElementById('filmStrip');
