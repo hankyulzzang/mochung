@@ -219,14 +219,14 @@
 
   .baby-film-wrap{ overflow:hidden; margin:0 -28px; }
   .baby-film-track{ display:flex; width:max-content; animation:babyFilmScroll 34s linear infinite; }
-  .baby-film-frame{ position:relative; flex:0 0 auto; width:130px; box-sizing:border-box; padding:13px 3px; margin-right:2px; background:#B7C0C6; }
+  .baby-film-frame{ position:relative; flex:0 0 auto; width:130px; box-sizing:border-box; padding:13px 3px; background:#B7C0C6; }
   .baby-film-frame::before, .baby-film-frame::after{
     content:'';
     position:absolute;
     left:0; right:0;
     height:13px;
-    background-image: radial-gradient(circle, var(--bg) 3px, transparent 3.2px);
-    background-size:16px 100%;
+    background-image: repeating-linear-gradient(to right, var(--bg) 0 6px, transparent 6px 16px);
+    background-size:16px 55%;
     background-position:6px center;
     background-repeat:repeat-x;
   }
@@ -240,9 +240,7 @@
     z-index:1;
     font-size:7px;
     letter-spacing:0.5px;
-    color:#6B7378;
-    background:var(--bg);
-    padding:0 4px;
+    color:#3A3E42;
     white-space:nowrap;
   }
   .baby-film-frame img{ width:100%; aspect-ratio:3/4; object-fit:cover; display:block; cursor:pointer; background:#EEF4F7; }
