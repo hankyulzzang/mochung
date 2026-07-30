@@ -393,6 +393,40 @@
     color:var(--gold);
   }
   .music-fab .music-icon{ display:inline-block; }
+
+  .sound-toast{
+    position:fixed;
+    top:66px;
+    right:16px;
+    max-width:180px;
+    background:rgba(35,35,35,0.72);
+    color:#FFFFFF;
+    font-family:'Gowun Dodum', sans-serif;
+    font-size:12px;
+    line-height:1.5;
+    text-align:center;
+    padding:10px 14px;
+    border-radius:10px;
+    z-index:41;
+    opacity:0;
+    transform:translateY(-6px);
+    pointer-events:none;
+    transition:opacity 0.4s ease, transform 0.4s ease;
+  }
+  .sound-toast::before{
+    content:'';
+    position:absolute;
+    top:-6px;
+    right:18px;
+    width:0; height:0;
+    border-left:6px solid transparent;
+    border-right:6px solid transparent;
+    border-bottom:6px solid rgba(35,35,35,0.72);
+  }
+  .sound-toast.show{
+    opacity:1;
+    transform:translateY(0);
+  }
   .music-fab.playing .music-icon{ animation: spin 3s linear infinite; }
 </style>
 </head>
@@ -606,6 +640,7 @@
     <path d="M10.5 17 L7.382 15.2 A3.6 3.6 0 0 1 10.5 13.4 Z" fill="#F3C23D"/>
   </svg>
 </button>
+<div id="soundToast" class="sound-toast">음악이 준비되어있습니다.<br>소리를 켜주세요.</div>
 
 <div id="lightbox" onclick="closeLightbox(event)">
   <button id="lightboxClose" onclick="closeLightbox(event)">&times;</button>
@@ -780,6 +815,21 @@ function hideIntro(){
   if(introHidden) return;
   introHidden = true;
   document.getElementById('intro').classList.add('hide');
+  showSoundToast();
+}
+
+let soundToastTimer = null;
+function showSoundToast(){
+  const toast = document.getElementById('soundToast');
+  if(!toast) return;
+  toast.classList.add('show');
+  clearTimeout(soundToastTimer);
+  soundToastTimer = setTimeout(hideSoundToast, 4500);
+}
+function hideSoundToast(){
+  clearTimeout(soundToastTimer);
+  const toast = document.getElementById('soundToast');
+  if(toast) toast.classList.remove('show');
 }
 
 function playIntroCaptionThenHide(){
@@ -1364,6 +1414,7 @@ function updateMusicButton(){
 }
 
 function toggleMusic(){
+  hideSoundToast();
   if(!ytReady || !ytPlayer) return;
   if(musicPlaying){ ytPlayer.pauseVideo(); } else { ytPlayer.playVideo(); }
 }
@@ -1377,6 +1428,7 @@ function bindFirstInteractionAutoplay(){
   firstInteractionBound = true;
   const startOnce = function(){
     if(!musicPlaying && ytReady && ytPlayer){ ytPlayer.playVideo(); }
+    hideSoundToast();
     document.removeEventListener('click', startOnce);
     document.removeEventListener('touchstart', startOnce);
     document.removeEventListener('scroll', startOnce);
