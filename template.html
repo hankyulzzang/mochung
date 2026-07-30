@@ -213,9 +213,11 @@
   .flower-intro{ color:var(--green-soft); font-size:14px; line-height:1.9; margin:0 0 26px; }
   .flower-faces{ display:flex; justify-content:center; gap:36px; margin-bottom:30px; }
   .flower-face-item{ display:flex; flex-direction:column; align-items:center; justify-content:flex-end; }
-  .flower-face-img{ height:160px; width:auto; max-width:140px; object-fit:contain; filter:url(#babyFaceOutline); }
+  .flower-face-img{ height:160px; width:auto; max-width:140px; object-fit:contain; filter:url(#babyFaceOutline); cursor:pointer; }
   #babyFace2{ height:140px; }
   .flower-face-name{ margin:12px 0 0; font-size:14px; font-weight:700; color:var(--gold); }
+  .flower-face-birth{ margin:2px 0 0; font-size:12px; color:var(--green-soft); }
+  .flower-face-hint{ color:var(--green-soft); font-size:14px; margin:0 0 26px; }
 
   .baby-film-wrap{ overflow-x:auto; overflow-y:hidden; margin:0 -28px; -webkit-overflow-scrolling:touch; scrollbar-width:none; }
   .baby-film-wrap::-webkit-scrollbar{ display:none; }
@@ -510,14 +512,17 @@
     <p class="flower-intro fadeup" id="flowerGirlMessage">신부의 귀여운 조카들이 화동 역할을 할 예정입니다.</p>
     <div class="flower-faces fadeup">
       <div class="flower-face-item">
-        <img class="flower-face-img" id="babyFace1" alt="">
+        <img class="flower-face-img" id="babyFace1" alt="" onclick="toggleBabyFace(1)">
         <p class="flower-face-name">하늘</p>
+        <p class="flower-face-birth">22.06</p>
       </div>
       <div class="flower-face-item">
-        <img class="flower-face-img" id="babyFace2" alt="">
+        <img class="flower-face-img" id="babyFace2" alt="" onclick="toggleBabyFace(2)">
         <p class="flower-face-name">바다</p>
+        <p class="flower-face-birth">24.04</p>
       </div>
     </div>
+    <p class="flower-face-hint fadeup">화동 얼굴을 클릭해보세요!</p>
     <div class="baby-film-wrap fadeup" id="babyFilmWrap">
       <div class="baby-film-track" id="babyFilmTrack"></div>
     </div>
@@ -891,6 +896,20 @@ function renderGallery(photos){
 }
 
 let babyGalleryPhotos = [];
+const babyFaceUrls = { 1: { normal:'', click:'' }, 2: { normal:'', click:'' } };
+const babyFaceTimers = {};
+
+// 화동 사진을 누르면 잠깐 다른 표정(click1/2) 사진으로 바뀌었다가 2초 뒤 원래 사진으로 돌아옵니다.
+function toggleBabyFace(n){
+  const urls = babyFaceUrls[n];
+  if(!urls || !urls.click) return;
+  const img = document.getElementById('babyFace' + n);
+  clearTimeout(babyFaceTimers[n]); // 연속으로 눌러도 항상 지금 시점부터 2초 후에 돌아가게 함
+  img.src = urls.click;
+  babyFaceTimers[n] = setTimeout(function(){
+    img.src = urls.normal;
+  }, 2000);
+}
 
 function renderBabyFilm(photos){
   babyGalleryPhotos = photos;
@@ -1135,8 +1154,18 @@ async function loadFromSheet(){
     }
     if(filmPhotos.length) renderFilmStrip(filmPhotos);
 
-    if(data.babyface1) document.getElementById('babyFace1').src = driveDirectUrl(data.babyface1);
-    if(data.babyface2) document.getElementById('babyFace2').src = driveDirectUrl(data.babyface2);
+    if(data.babyface1){
+      const url = driveDirectUrl(data.babyface1);
+      babyFaceUrls[1].normal = url;
+      document.getElementById('babyFace1').src = url;
+    }
+    if(data.babyface2){
+      const url = driveDirectUrl(data.babyface2);
+      babyFaceUrls[2].normal = url;
+      document.getElementById('babyFace2').src = url;
+    }
+    if(data.click1) babyFaceUrls[1].click = driveDirectUrl(data.click1);
+    if(data.click2) babyFaceUrls[2].click = driveDirectUrl(data.click2);
 
     const flowerGirlMessage = pickField(data, SHEET_KEYS.flowerGirlMessage);
     if(flowerGirlMessage){
