@@ -212,12 +212,10 @@
 
   .flower-intro{ color:var(--green-soft); font-size:14px; line-height:1.9; margin:0 0 26px; }
   .flower-faces{ display:flex; justify-content:center; gap:36px; margin-bottom:30px; }
-  .flower-face-item{ display:flex; flex-direction:column; align-items:center; }
+  .flower-face-item{ display:flex; flex-direction:column; align-items:center; justify-content:flex-end; }
   .flower-face-img{ height:160px; width:auto; max-width:140px; object-fit:contain; filter:url(#babyFaceOutline); }
   #babyFace2{ height:140px; }
-  .flower-face-name{ margin:12px 0 0; font-size:14px; font-weight:700; }
-  .flower-face-name-orange{ color:var(--gold); }
-  .flower-face-name-green{ color:var(--green); }
+  .flower-face-name{ margin:12px 0 0; font-size:14px; font-weight:700; color:var(--gold); }
 
   .baby-film-wrap{ overflow:hidden; margin:0 -28px; }
   .baby-film-track{ display:flex; width:max-content; animation:babyFilmScroll 34s linear infinite; }
@@ -490,11 +488,11 @@
     <div class="flower-faces fadeup">
       <div class="flower-face-item">
         <img class="flower-face-img" id="babyFace1" alt="">
-        <p class="flower-face-name flower-face-name-orange">하늘</p>
+        <p class="flower-face-name">하늘</p>
       </div>
       <div class="flower-face-item">
         <img class="flower-face-img" id="babyFace2" alt="">
-        <p class="flower-face-name flower-face-name-green">바다</p>
+        <p class="flower-face-name">바다</p>
       </div>
     </div>
     <div class="baby-film-wrap fadeup">
