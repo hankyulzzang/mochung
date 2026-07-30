@@ -213,7 +213,8 @@
   .flower-intro{ color:var(--green-soft); font-size:14px; line-height:1.9; margin:0 0 26px; }
   .flower-faces{ display:flex; justify-content:center; gap:36px; margin-bottom:30px; }
   .flower-face-item{ display:flex; flex-direction:column; align-items:center; }
-  .flower-face-img{ height:160px; width:auto; max-width:140px; object-fit:contain; filter:drop-shadow(0 8px 14px rgba(60,50,45,0.28)); }
+  .flower-face-img{ height:160px; width:auto; max-width:140px; object-fit:contain; filter:url(#babyFaceOutline); }
+  #babyFace2{ height:140px; }
   .flower-face-name{ margin:12px 0 0; font-size:14px; font-weight:700; }
   .flower-face-name-orange{ color:var(--gold); }
   .flower-face-name-green{ color:var(--green); }
@@ -374,6 +375,32 @@
 </style>
 </head>
 <body>
+
+<svg width="0" height="0" style="position:absolute;">
+  <defs>
+    <!-- 화동 사진(누끼컷)에 흰색 테두리 + 얇고 안 퍼지는 그림자를 입히는 필터.
+         feMorphology(dilate)로 알파 마스크를 부풀려 흰 테두리를 그리고, 그 결과에
+         살짝만 블러 준 그림자를 얹습니다(box-shadow처럼 사각형이 아니라 사진 실루엣
+         모양 그대로 테두리/그림자가 생김). -->
+    <filter id="babyFaceOutline" x="-60%" y="-60%" width="220%" height="220%">
+      <feMorphology in="SourceAlpha" operator="dilate" radius="5" result="dilated"/>
+      <feFlood flood-color="#ffffff" result="whiteColor"/>
+      <feComposite in="whiteColor" in2="dilated" operator="in" result="whiteOutline"/>
+      <feMerge result="withOutline">
+        <feMergeNode in="whiteOutline"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+      <feGaussianBlur in="withOutline" stdDeviation="3" result="blurred"/>
+      <feOffset in="blurred" dx="0" dy="4" result="shadowOffset"/>
+      <feFlood flood-color="#3c322d" flood-opacity="0.32" result="shadowColor"/>
+      <feComposite in="shadowColor" in2="shadowOffset" operator="in" result="shadowFinal"/>
+      <feMerge>
+        <feMergeNode in="shadowFinal"/>
+        <feMergeNode in="withOutline"/>
+      </feMerge>
+    </filter>
+  </defs>
+</svg>
 
 <div id="intro">
   <div class="intro-phone">
