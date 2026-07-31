@@ -13,7 +13,7 @@
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Gowun+Dodum&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Gowun+Dodum&family=Gaegu:wght@700&display=swap" rel="stylesheet">
 <link rel="preconnect" href="https://docs.google.com">
 <link rel="preconnect" href="https://lh3.googleusercontent.com" crossorigin>
 
@@ -27,6 +27,7 @@
     --green-soft: #4E6B58;
     --gold: #C9A257;
     --gold-soft: #C9A25755;
+    --pink: #E86A8A;
   }
   *{ box-sizing: border-box; }
   html,body{ margin:0; padding:0; }
@@ -211,12 +212,34 @@
   .more-btn{ margin-top:14px; width:100%; padding:10px; background:transparent; border:1px solid var(--gold-soft); border-radius:4px; color:var(--gold); font-family:'Gowun Dodum', sans-serif; font-size:14px; cursor:pointer; }
 
   .flower-intro{ color:var(--green-soft); font-size:14px; line-height:1.9; margin:0 0 26px; }
-  .flower-faces{ display:flex; justify-content:center; gap:36px; margin-bottom:30px; }
+  .flower-faces{ display:flex; justify-content:center; margin-bottom:30px; }
   .flower-face-item{ display:flex; flex-direction:column; align-items:center; justify-content:flex-end; }
   .flower-face-img{ height:160px; width:auto; max-width:140px; object-fit:contain; filter:url(#babyFaceOutline); cursor:pointer; }
   #babyFace2{ height:125px; }
   .flower-face-name{ margin:12px 0 0; font-size:14px; font-weight:700; color:var(--gold); }
   .flower-face-birth{ margin:2px 0 0; font-size:12px; color:var(--green-soft); }
+  .flower-click-mid{ position:relative; width:36px; flex-shrink:0; }
+  .flower-click-finger{
+    position:absolute;
+    left:50%; top:140px;
+    transform:translateX(-50%) rotate(-10deg);
+    font-size:22px;
+    animation:flowerBob 1.2s ease-in-out infinite;
+    pointer-events:none;
+  }
+  @keyframes flowerBob{ 0%,100%{ transform:translateX(-50%) translateY(0) rotate(-10deg); } 50%{ transform:translateX(-50%) translateY(4px) rotate(-16deg); } }
+  .flower-click-text{
+    position:absolute;
+    left:50%; top:184px;
+    transform:translateX(-50%) rotate(-6deg);
+    font-family:'Gaegu', 'Gowun Dodum', sans-serif;
+    color:var(--pink);
+    font-size:16px;
+    white-space:nowrap;
+    animation:flowerWiggle 2.2s ease-in-out infinite;
+    pointer-events:none;
+  }
+  @keyframes flowerWiggle{ 0%,100%{ transform:translateX(-50%) rotate(-6deg); } 50%{ transform:translateX(-50%) rotate(-1deg); } }
 
   .baby-film-wrap{ overflow-x:auto; overflow-y:hidden; margin:0 -28px; -webkit-overflow-scrolling:touch; scrollbar-width:none; }
   .baby-film-wrap::-webkit-scrollbar{ display:none; }
@@ -548,6 +571,10 @@
         <img class="flower-face-img" id="babyFace1" alt="" onclick="toggleBabyFace(1)">
         <p class="flower-face-name">하늘</p>
         <p class="flower-face-birth">22.06</p>
+      </div>
+      <div class="flower-click-mid">
+        <span class="flower-click-finger">👆</span>
+        <span class="flower-click-text">Click!</span>
       </div>
       <div class="flower-face-item">
         <img class="flower-face-img" id="babyFace2" alt="" onclick="toggleBabyFace(2)">
