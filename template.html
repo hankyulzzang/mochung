@@ -339,7 +339,7 @@
   .share-btn-primary{ background:var(--gold); color:#FFFFFF; }
   .share-btn-secondary{ background:#FFFFFF; color:var(--green); }
 
-  .site-footer{ color:var(--gold); font-size:14px; line-height:1.7; text-align:center; padding:22px 28px 28px; margin:0; }
+  .site-footer{ color:var(--gold); font-size:14px; line-height:1.7; text-align:center; padding:22px 28px 28px; margin:0; white-space:pre-line; }
 
   .gallery-grid img, .gallery-more img{ cursor:pointer; }
   #lightbox{
@@ -648,7 +648,15 @@
     </div>
   </div>
 
-  <p class="site-footer">청첩장 제작 : 장한결<br>도움 : 클로드 코드<br>검수 : 친구들</p>
+  <p class="site-footer" id="siteFooterText">읽어주셔서 감사합니다.
+
+제작 : 장한결
+
+SPECIAL THANKS
+
+대문 글씨 협찬 : 장남석(신부 아버지)
+도움 : 클로드, 김준재님
+검수 : 이대동기들</p>
 
 </div>
 
@@ -709,7 +717,8 @@ const SHEET_KEYS = {
   mainMessage: ['main_message', '대표문구'],
   sharePhoto: ['share_photo', 'share'],
   kakaoPhoto: ['kakao_thumbnail_photo', '카톡전송 썸네일'],
-  kakaoText: ['kakao_thumbnail_text', '썸네일 문구']
+  kakaoText: ['kakao_thumbnail_text', '썸네일 문구'],
+  footerText: ['footer_text', '최하단 문구']
 };
 
 // 카카오톡 공유(사용자 정의 템플릿) 카드에 채워 넣을 값. 시트를 못 불러왔을 때는
@@ -1265,6 +1274,11 @@ async function loadFromSheet(){
     const flowerGirlMessage = pickField(data, SHEET_KEYS.flowerGirlMessage);
     if(flowerGirlMessage){
       document.getElementById('flowerGirlMessage').textContent = flowerGirlMessage;
+    }
+
+    const footerText = pickField(data, SHEET_KEYS.footerText);
+    if(footerText){
+      document.getElementById('siteFooterText').textContent = footerText;
     }
 
     const babyPhotos = [];
