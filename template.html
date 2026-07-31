@@ -880,15 +880,7 @@ function playIntroCaptionThenHide(){
 
 setTimeout(hideIntro, INTRO_MAX_WAIT);
 
-const WEEKDAY_EN = ['SUN','MON','TUE','WED','THU','FRI','SAT'];
 const WEEKDAY_KR = ['일','월','화','수','목','금','토'];
-
-function formatTime12(hh, min){
-  hh = parseInt(hh, 10);
-  const period = hh >= 12 ? 'PM' : 'AM';
-  let h12 = hh % 12; if(h12 === 0) h12 = 12;
-  return h12 + ':' + min + ' ' + period;
-}
 
 function renderDday(wc){
   const diff = daysBetween(todayInKST(), wc);
@@ -929,7 +921,7 @@ function renderWeddingDate(wc){
   const min = String(wc.minute).padStart(2,'0');
 
   document.querySelector('.date').textContent =
-    wc.year + '. ' + wc.month + '. ' + wc.day + ' ' + WEEKDAY_EN[wd] + ' ' + formatTime12(hh, min);
+    wc.year + '.' + String(wc.month).padStart(2,'0') + '.' + String(wc.day).padStart(2,'0') + '.(' + WEEKDAY_KR[wd] + ') ' + hh + ':' + min;
   document.querySelector('.dday-date').textContent =
     wc.year + '년 ' + wc.month + '월 ' + wc.day + '일 ' + WEEKDAY_KR[wd] + '요일';
   document.querySelector('.cal-title').textContent = wc.year + '년 ' + wc.month + '월';
