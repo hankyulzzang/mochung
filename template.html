@@ -1428,7 +1428,10 @@ function onYouTubeIframeAPIReady(){
   ytPlayer = new YT.Player('ytPlayer', {
     videoId: BG_MUSIC_VIDEO_ID,
     playerVars: {
-      autoplay: 1,
+      // autoplay:1을 쓰면 유튜브가 우리 코드(onReady)보다 먼저, 우리가 볼륨을
+      // 낮출 새도 없이 원래 볼륨으로 재생을 시작해버려서 처음에 소리가 크게
+      // 들렸습니다. 그래서 자동재생은 끄고, 아래에서 "볼륨을 0으로 낮춘 뒤"
+      // 우리가 직접 재생을 시작합니다.
       controls: 0,
       start: BG_MUSIC_START,
       playsinline: 1
@@ -1436,7 +1439,7 @@ function onYouTubeIframeAPIReady(){
     events: {
       onReady: function(){
         ytReady = true;
-        ytPlayer.playVideo();
+        playMusicWithFadeIn();
         bindFirstInteractionAutoplay();
       },
       onStateChange: function(evt){
@@ -1450,11 +1453,20 @@ function onYouTubeIframeAPIReady(){
         } else if(evt.data === YT.PlayerState.ENDED){
           // 끝까지 재생되면 처음(0초)이 아니라 항상 시작 지점으로 되돌아가 이어서 반복 재생합니다.
           ytPlayer.seekTo(BG_MUSIC_START, true);
-          ytPlayer.playVideo();
+          playMusicWithFadeIn();
         }
       }
     }
   });
+}
+
+// 재생을 시작하기 "직전에" 볼륨을 미리 0으로 낮춰둡니다. PLAYING 이벤트가 온 뒤에
+// 낮추면 그 사이 짧게라도 원래 볼륨으로 소리가 나버릴 수 있어서, 재생 호출보다
+// 앞서 실행하는 게 핵심입니다.
+function playMusicWithFadeIn(){
+  if(!ytPlayer) return;
+  ytPlayer.setVolume(0);
+  ytPlayer.playVideo();
 }
 
 // 노래가 갑자기 뚝 시작되지 않도록, 재생될 때마다 볼륨을 0에서 서서히 100까지 올립니다(페이드인/크레센도).
@@ -1480,7 +1492,7 @@ function updateMusicButton(){
 function toggleMusic(){
   hideSoundToast();
   if(!ytReady || !ytPlayer) return;
-  if(musicPlaying){ ytPlayer.pauseVideo(); } else { ytPlayer.playVideo(); }
+  if(musicPlaying){ ytPlayer.pauseVideo(); } else { playMusicWithFadeIn(); }
 }
 
 // 브라우저가 소리 있는 자동재생을 막은 경우, 화면에서 처음 일어나는
@@ -1491,7 +1503,7 @@ function bindFirstInteractionAutoplay(){
   if(firstInteractionBound) return;
   firstInteractionBound = true;
   const startOnce = function(){
-    if(!musicPlaying && ytReady && ytPlayer){ ytPlayer.playVideo(); }
+    if(!musicPlaying && ytReady && ytPlayer){ playMusicWithFadeIn(); }
     hideSoundToast();
     document.removeEventListener('click', startOnce);
     document.removeEventListener('touchstart', startOnce);
