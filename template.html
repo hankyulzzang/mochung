@@ -175,10 +175,13 @@
     font-size:42px;
     color:var(--green);
     filter:url(#inviteTextOutline);
-    clip-path:inset(0 100% 0 0);
+    /* 오른쪽만 100%로 가려서 시작하고, 나머지 방향(위/아래/왼쪽)은 미리 음수로
+       살짝 열어둡니다. 그래야 글자 테두리의 흰색 헤일로(필터 번짐)가 clip-path
+       경계에 걸려 뭉텅 잘리지 않고 자연스럽게 보입니다. */
+    clip-path:inset(-20% 100% -20% -20%);
   }
   .hero-wedding-script.show .hero-wedding-script-inner{ animation:heroHandwrite 1.6s ease-out forwards; }
-  @keyframes heroHandwrite{ to{ clip-path:inset(0 0 0 0); } }
+  @keyframes heroHandwrite{ to{ clip-path:inset(-20% -20% -20% -20%); } }
   .hero-stage{ position:relative; margin-top:-44px; }
   .hero-fx{ position:absolute; left:-28px; right:-28px; top:0; bottom:-10px; overflow:hidden; pointer-events:none; z-index:5; }
   .bloom{ position:absolute; top:-16px; width:9px; height:9px; animation:fallBloom linear infinite; }
