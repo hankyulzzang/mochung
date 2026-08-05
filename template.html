@@ -1432,6 +1432,10 @@ function onYouTubeIframeAPIReady(){
       // 낮출 새도 없이 원래 볼륨으로 재생을 시작해버려서 처음에 소리가 크게
       // 들렸습니다. 그래서 자동재생은 끄고, 아래에서 "볼륨을 0으로 낮춘 뒤"
       // 우리가 직접 재생을 시작합니다.
+      // mute:1도 함께 줍니다: setVolume(0)은 재생을 시작한 "뒤에" 전달되는
+      // 명령이라 아주 짧게라도 원래 소리가 새어나갈 여지가 있는데, mute는
+      // 영상이 로드되는 시점부터 처음부터 무음으로 큐가 되어서 그런 틈이 없습니다.
+      mute: 1,
       controls: 0,
       start: BG_MUSIC_START,
       playsinline: 1
@@ -1460,11 +1464,12 @@ function onYouTubeIframeAPIReady(){
   });
 }
 
-// 재생을 시작하기 "직전에" 볼륨을 미리 0으로 낮춰둡니다. PLAYING 이벤트가 온 뒤에
+// 재생을 시작하기 "직전에" 무음+볼륨0으로 낮춰둡니다. PLAYING 이벤트가 온 뒤에
 // 낮추면 그 사이 짧게라도 원래 볼륨으로 소리가 나버릴 수 있어서, 재생 호출보다
 // 앞서 실행하는 게 핵심입니다.
 function playMusicWithFadeIn(){
   if(!ytPlayer) return;
+  ytPlayer.mute();
   ytPlayer.setVolume(0);
   ytPlayer.playVideo();
 }
@@ -1481,6 +1486,7 @@ function fadeInMusicVolume(){
   const stepTime = BG_MUSIC_FADE_MS / steps;
   let i = 0;
   ytPlayer.setVolume(0);
+  ytPlayer.unMute();
   musicFadeTimer = setInterval(function(){
     i++;
     const progress = i / steps;
