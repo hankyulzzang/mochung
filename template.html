@@ -1423,6 +1423,7 @@ let ytPlayer = null;
 let ytReady = false;
 let musicPlaying = false;
 let musicFadeTimer = null;
+let musicUnmuteTimer = null;
 
 function onYouTubeIframeAPIReady(){
   ytPlayer = new YT.Player('ytPlayer', {
@@ -1454,6 +1455,8 @@ function onYouTubeIframeAPIReady(){
         } else if(evt.data === YT.PlayerState.PAUSED){
           musicPlaying = false;
           updateMusicButton();
+          clearTimeout(musicUnmuteTimer);
+          clearInterval(musicFadeTimer);
         } else if(evt.data === YT.PlayerState.ENDED){
           // 끝까지 재생되면 처음(0초)이 아니라 항상 시작 지점으로 되돌아가 이어서 반복 재생합니다.
           ytPlayer.seekTo(BG_MUSIC_START, true);
@@ -1482,18 +1485,26 @@ function playMusicWithFadeIn(){
 function fadeInMusicVolume(){
   if(!ytPlayer) return;
   clearInterval(musicFadeTimer);
-  const steps = 40;
-  const stepTime = BG_MUSIC_FADE_MS / steps;
-  let i = 0;
+  clearTimeout(musicUnmuteTimer);
   ytPlayer.setVolume(0);
-  ytPlayer.unMute();
-  musicFadeTimer = setInterval(function(){
-    i++;
-    const progress = i / steps;
-    const eased = Math.pow(progress, 3);
-    ytPlayer.setVolume(Math.min(Math.round(eased * 100), 100));
-    if(i >= steps) clearInterval(musicFadeTimer);
-  }, stepTime);
+  // 재생이 막 시작된 직후엔 재생기 자체의 시작 잡음(버퍼링 등)이 섞여 나올 수
+  // 있습니다. 그래서 무음을 바로 풀지 않고, 완전히 무음(mute) 상태로 잠깐
+  // 대기해 재생이 안정된 뒤에 무음을 풀고 페이드인을 시작합니다. 이 대기 동안은
+  // mute:1로 재생 중이라 소리가 전혀 나지 않으니 안전합니다.
+  musicUnmuteTimer = setTimeout(function(){
+    ytPlayer.setVolume(0);
+    ytPlayer.unMute();
+    const steps = 40;
+    const stepTime = BG_MUSIC_FADE_MS / steps;
+    let i = 0;
+    musicFadeTimer = setInterval(function(){
+      i++;
+      const progress = i / steps;
+      const eased = Math.pow(progress, 3);
+      ytPlayer.setVolume(Math.min(Math.round(eased * 100), 100));
+      if(i >= steps) clearInterval(musicFadeTimer);
+    }, stepTime);
+  }, 250);
 }
 
 function updateMusicButton(){
