@@ -1417,7 +1417,7 @@ function copyInviteLink(e){
    언제든 켜고 끌 수 있습니다.
    ========================================================= */
 const BG_MUSIC_VIDEO_ID = 'e1mOmdykmwI';
-const BG_MUSIC_START = 35; // 이 지점부터 재생 (반복될 때도 항상 여기서 다시 시작)
+const BG_MUSIC_START = 33; // 이 지점부터 재생 (반복될 때도 항상 여기서 다시 시작)
 const BG_MUSIC_FADE_MS = 1000; // 재생 시작 후 이 시간(ms) 동안 볼륨 0 -> 100 서서히 커짐(페이드인)
 let ytPlayer = null;
 let ytReady = false;
@@ -1448,7 +1448,7 @@ function onYouTubeIframeAPIReady(){
           musicPlaying = false;
           updateMusicButton();
         } else if(evt.data === YT.PlayerState.ENDED){
-          // 끝까지 재생되면 처음(0초)이 아니라 항상 35초 지점으로 되돌아가 이어서 반복 재생합니다.
+          // 끝까지 재생되면 처음(0초)이 아니라 항상 시작 지점으로 되돌아가 이어서 반복 재생합니다.
           ytPlayer.seekTo(BG_MUSIC_START, true);
           ytPlayer.playVideo();
         }
