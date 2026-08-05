@@ -173,7 +173,7 @@
        위치를 옮겨도 실제로는 적용되지 않았습니다. 그래서 위치는 transform이
        아니라 bottom 값으로 잡습니다(.fadeup은 opacity/transform만 건드리므로
        bottom은 그대로 유지됩니다). */
-    bottom:10px;
+    bottom:calc(10px - 0.5cm);
     z-index:2;
     margin:0;
     text-align:center;
@@ -182,7 +182,7 @@
   .hero-wedding-script-inner{
     display:inline-block;
     font-family:'Parisienne', cursive;
-    font-size:42px;
+    font-size:46.2px;
     color:var(--green);
     filter:url(#inviteTextOutline);
     /* 오른쪽만 100%로 가려서 시작하고, 나머지 방향(위/아래/왼쪽)은 미리 음수로
