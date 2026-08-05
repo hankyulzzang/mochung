@@ -1419,12 +1419,12 @@ function copyInviteLink(e){
 const BG_MUSIC_VIDEO_ID = 'e1mOmdykmwI';
 const BG_MUSIC_START = 30; // 이 지점부터 재생 (반복될 때도 항상 여기서 다시 시작)
 const BG_MUSIC_FADE_MS = 5000; // 재생 시작 후 이 시간(ms) 동안 볼륨 0 -> 100 서서히 커짐(페이드인)
-const BG_MUSIC_MUTE_MS = 1500; // 재생을 시작한 뒤 이 시간(ms) 동안은 완전히 무음 상태를 유지했다가 그 다음에 페이드인을 시작
+const BG_MUSIC_MUTE_MS = 1500; // 재생을 시작하기 전 이 시간(ms) 동안 무음으로 대기했다가, 그 다음 볼륨 0으로 재생을 시작
 let ytPlayer = null;
 let ytReady = false;
 let musicPlaying = false;
 let musicFadeTimer = null;
-let musicUnmuteTimer = null;
+let musicMuteTimer = null;
 
 function onYouTubeIframeAPIReady(){
   ytPlayer = new YT.Player('ytPlayer', {
@@ -1445,7 +1445,7 @@ function onYouTubeIframeAPIReady(){
     events: {
       onReady: function(){
         ytReady = true;
-        playMusicWithFadeIn();
+        scheduleMusicStart();
         bindFirstInteractionAutoplay();
       },
       onStateChange: function(evt){
@@ -1456,26 +1456,34 @@ function onYouTubeIframeAPIReady(){
         } else if(evt.data === YT.PlayerState.PAUSED){
           musicPlaying = false;
           updateMusicButton();
-          clearTimeout(musicUnmuteTimer);
+          clearTimeout(musicMuteTimer);
           clearInterval(musicFadeTimer);
         } else if(evt.data === YT.PlayerState.ENDED){
           // 끝까지 재생되면 처음(0초)이 아니라 항상 시작 지점으로 되돌아가 이어서 반복 재생합니다.
           ytPlayer.seekTo(BG_MUSIC_START, true);
-          playMusicWithFadeIn();
+          scheduleMusicStart();
         }
       }
     }
   });
 }
 
-// 재생을 시작하기 "직전에" 무음+볼륨0으로 낮춰둡니다. PLAYING 이벤트가 온 뒤에
-// 낮추면 그 사이 짧게라도 원래 볼륨으로 소리가 나버릴 수 있어서, 재생 호출보다
-// 앞서 실행하는 게 핵심입니다.
-function playMusicWithFadeIn(){
+// 1단계: BG_MUSIC_MUTE_MS(1.5초) 동안 무음 상태로 대기만 하고 아직 재생을 시작하지
+// 않습니다(재생기 자체의 시작 잡음이 섞일 여지를 아예 없앰).
+// 2단계: 그 시간이 지나면 볼륨을 0으로 맞춘 "상태에서" 재생을 시작합니다(재생을
+// 시작한 뒤에 볼륨을 낮추면 그 찰나에 원래 소리가 새어나올 수 있어서, 반드시
+// 재생 호출보다 앞서 볼륨을 낮춰둡니다).
+// 3단계: 재생이 실제로 시작된 게 확인되면(PLAYING) fadeInMusicVolume()이 이어서
+// 5초간 볼륨을 0 -> 100으로 서서히 올립니다.
+function scheduleMusicStart(){
   if(!ytPlayer) return;
-  ytPlayer.mute();
+  clearTimeout(musicMuteTimer);
   ytPlayer.setVolume(0);
-  ytPlayer.playVideo();
+  musicMuteTimer = setTimeout(function(){
+    ytPlayer.setVolume(0);
+    ytPlayer.unMute();
+    ytPlayer.playVideo();
+  }, BG_MUSIC_MUTE_MS);
 }
 
 // 노래가 갑자기 뚝 시작되지 않도록, 재생될 때마다 볼륨을 0에서 서서히 100까지 올립니다(페이드인/크레센도).
@@ -1486,26 +1494,17 @@ function playMusicWithFadeIn(){
 function fadeInMusicVolume(){
   if(!ytPlayer) return;
   clearInterval(musicFadeTimer);
-  clearTimeout(musicUnmuteTimer);
   ytPlayer.setVolume(0);
-  // 재생이 막 시작된 직후엔 재생기 자체의 시작 잡음(버퍼링 등)이 섞여 나올 수
-  // 있습니다. 그래서 무음을 바로 풀지 않고, 완전히 무음(mute) 상태로 잠깐
-  // 대기해 재생이 안정된 뒤에 무음을 풀고 페이드인을 시작합니다. 이 대기 동안은
-  // mute:1로 재생 중이라 소리가 전혀 나지 않으니 안전합니다.
-  musicUnmuteTimer = setTimeout(function(){
-    ytPlayer.setVolume(0);
-    ytPlayer.unMute();
-    const steps = 40;
-    const stepTime = BG_MUSIC_FADE_MS / steps;
-    let i = 0;
-    musicFadeTimer = setInterval(function(){
-      i++;
-      const progress = i / steps;
-      const eased = Math.pow(progress, 3);
-      ytPlayer.setVolume(Math.min(Math.round(eased * 100), 100));
-      if(i >= steps) clearInterval(musicFadeTimer);
-    }, stepTime);
-  }, BG_MUSIC_MUTE_MS);
+  const steps = 40;
+  const stepTime = BG_MUSIC_FADE_MS / steps;
+  let i = 0;
+  musicFadeTimer = setInterval(function(){
+    i++;
+    const progress = i / steps;
+    const eased = Math.pow(progress, 3);
+    ytPlayer.setVolume(Math.min(Math.round(eased * 100), 100));
+    if(i >= steps) clearInterval(musicFadeTimer);
+  }, stepTime);
 }
 
 function updateMusicButton(){
@@ -1516,7 +1515,15 @@ function updateMusicButton(){
 function toggleMusic(){
   hideSoundToast();
   if(!ytReady || !ytPlayer) return;
-  if(musicPlaying){ ytPlayer.pauseVideo(); } else { playMusicWithFadeIn(); }
+  if(musicPlaying){
+    ytPlayer.pauseVideo();
+  } else {
+    // 버튼으로 직접 켜는 경우는 이미 사용자가 방금 누른 시점이라 1.5초씩
+    // 더 기다릴 필요 없이 바로 볼륨 0에서 재생을 시작하고 페이드인만 이어집니다.
+    ytPlayer.setVolume(0);
+    ytPlayer.unMute();
+    ytPlayer.playVideo();
+  }
 }
 
 // 브라우저가 소리 있는 자동재생을 막은 경우, 화면에서 처음 일어나는
@@ -1527,7 +1534,7 @@ function bindFirstInteractionAutoplay(){
   if(firstInteractionBound) return;
   firstInteractionBound = true;
   const startOnce = function(){
-    if(!musicPlaying && ytReady && ytPlayer){ playMusicWithFadeIn(); }
+    if(!musicPlaying && ytReady && ytPlayer){ scheduleMusicStart(); }
     hideSoundToast();
     document.removeEventListener('click', startOnce);
     document.removeEventListener('touchstart', startOnce);
