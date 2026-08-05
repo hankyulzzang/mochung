@@ -1470,16 +1470,22 @@ function playMusicWithFadeIn(){
 }
 
 // 노래가 갑자기 뚝 시작되지 않도록, 재생될 때마다 볼륨을 0에서 서서히 100까지 올립니다(페이드인/크레센도).
+// 사람 귀는 소리 크기를 선형이 아니라 로그적으로 느끼기 때문에, 볼륨을 %로 똑같이
+// 올려도 초반 몇 % 구간에서 대부분의 "커지는 느낌"이 몰려 갑자기 커진 것처럼 들립니다.
+// 그래서 값 자체를 선형(1,2,3...)이 아니라 세제곱 곡선으로 올려서, 처음엔 아주 천천히
+// 커지다가 뒤로 갈수록 빨리 커지게 해 귀에는 고르게 커지는 것처럼 들리게 합니다.
 function fadeInMusicVolume(){
   if(!ytPlayer) return;
   clearInterval(musicFadeTimer);
-  const steps = 20;
+  const steps = 40;
   const stepTime = BG_MUSIC_FADE_MS / steps;
   let i = 0;
   ytPlayer.setVolume(0);
   musicFadeTimer = setInterval(function(){
     i++;
-    ytPlayer.setVolume(Math.min(Math.round((i / steps) * 100), 100));
+    const progress = i / steps;
+    const eased = Math.pow(progress, 3);
+    ytPlayer.setVolume(Math.min(Math.round(eased * 100), 100));
     if(i >= steps) clearInterval(musicFadeTimer);
   }, stepTime);
 }
