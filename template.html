@@ -1416,9 +1416,9 @@ function copyInviteLink(e){
    여는 순간 ~ 첫 터치 사이, 거의 바로 재생됩니다. 우측 상단 버튼으로도
    언제든 켜고 끌 수 있습니다.
    ========================================================= */
-const BG_MUSIC_VIDEO_ID = 'e1mOmdykmwI';
-const BG_MUSIC_START = 132; // 이 지점부터 재생 (반복될 때도 항상 여기서 다시 시작)
-const BG_MUSIC_FADE_MS = 3000; // 재생 시작 후 이 시간(ms) 동안 볼륨 0 -> 100 서서히 커짐(페이드인)
+const BG_MUSIC_VIDEO_ID = 'CnEqrgMlWLQ';
+const BG_MUSIC_START = 30; // 이 지점부터 재생 (반복될 때도 항상 여기서 다시 시작)
+const BG_MUSIC_FADE_MS = 3000; // 재생 시작 후 이 시간(ms) 동안 볼륨 0 -> 100 서서히 커짐(페이드인, 항상 3제곱 곡선 사용)
 let ytPlayer = null;
 let ytReady = false;
 let musicPlaying = false;
