@@ -168,12 +168,16 @@
   .hero-photo img{ width:100%; height:100%; object-fit:cover; display:block; }
   .hero-wedding-script{
     position:absolute;
-    left:0; right:0; bottom:6%;
+    left:0; right:0;
+    /* .fadeup.show가 transform:translateY(0)을 덮어써버려서 예전엔 transform으로
+       위치를 옮겨도 실제로는 적용되지 않았습니다. 그래서 위치는 transform이
+       아니라 bottom 값으로 잡습니다(.fadeup은 opacity/transform만 건드리므로
+       bottom은 그대로 유지됩니다). */
+    bottom:10px;
     z-index:2;
     margin:0;
     text-align:center;
     pointer-events:none;
-    transform:translateY(calc(80px + 1cm));
   }
   .hero-wedding-script-inner{
     display:inline-block;
