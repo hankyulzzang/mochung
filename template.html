@@ -1416,25 +1416,18 @@ function copyInviteLink(e){
    여는 순간 ~ 첫 터치 사이, 거의 바로 재생됩니다. 우측 상단 버튼으로도
    언제든 켜고 끌 수 있습니다.
    ========================================================= */
-const BG_MUSIC_VIDEO_ID = 'e1mOmdykmwI';
-const BG_MUSIC_START = 30; // 이 지점부터 재생 (반복될 때도 항상 여기서 다시 시작)
-const BG_MUSIC_FADE_MS = 5000; // 재생 시작 후 이 시간(ms) 동안 볼륨 0 -> 100 서서히 커짐(페이드인)
-const BG_MUSIC_MUTE_MS = 1500; // 재생을 시작하기 전 이 시간(ms) 동안 무음으로 대기했다가, 그 다음 볼륨 0으로 재생을 시작
+const BG_MUSIC_VIDEO_ID = '63679CggQOA';
+const BG_MUSIC_START = 0; // 이 지점부터 재생 (반복될 때도 항상 여기서 다시 시작)
+const BG_MUSIC_FADE_MS = 2000; // 재생 시작 후 이 시간(ms) 동안 볼륨 0 -> 100 서서히 커짐(페이드인)
 let ytPlayer = null;
 let ytReady = false;
 let musicPlaying = false;
 let musicFadeTimer = null;
-let musicMuteTimer = null;
 
 function onYouTubeIframeAPIReady(){
   ytPlayer = new YT.Player('ytPlayer', {
     videoId: BG_MUSIC_VIDEO_ID,
     playerVars: {
-      // autoplay:1이나 mute:1을 playerVars에 주면 유튜브 플레이어가 우리 JS보다
-      // 먼저(혹은 우리가 알아채기도 전에) 자체적으로 재생을 시작해버리는 경우가
-      // 있었습니다(그래서 1.5초 대기가 끝나기도 전에 짧게 소리가 났던 원인으로
-      // 보입니다). 그래서 이제 재생을 암시하는 옵션은 전혀 주지 않고, 아래
-      // scheduleMusicStart()에서 우리가 원하는 시점에 직접 재생을 시작합니다.
       controls: 0,
       start: BG_MUSIC_START,
       playsinline: 1
@@ -1442,7 +1435,7 @@ function onYouTubeIframeAPIReady(){
     events: {
       onReady: function(){
         ytReady = true;
-        scheduleMusicStart();
+        playMusic();
         bindFirstInteractionAutoplay();
       },
       onStateChange: function(evt){
@@ -1453,53 +1446,35 @@ function onYouTubeIframeAPIReady(){
         } else if(evt.data === YT.PlayerState.PAUSED){
           musicPlaying = false;
           updateMusicButton();
-          clearTimeout(musicMuteTimer);
           clearInterval(musicFadeTimer);
         } else if(evt.data === YT.PlayerState.ENDED){
           // 끝까지 재생되면 처음(0초)이 아니라 항상 시작 지점으로 되돌아가 이어서 반복 재생합니다.
           ytPlayer.seekTo(BG_MUSIC_START, true);
-          scheduleMusicStart();
+          playMusic();
         }
       }
     }
   });
 }
 
-// 1단계: BG_MUSIC_MUTE_MS(1.5초) 동안 무음 상태로 대기만 하고 아직 재생을 시작하지
-// 않습니다(재생기 자체의 시작 잡음이 섞일 여지를 아예 없앰).
-// 2단계: 그 시간이 지나면 볼륨을 0으로 맞춘 "상태에서" 재생을 시작합니다(재생을
-// 시작한 뒤에 볼륨을 낮추면 그 찰나에 원래 소리가 새어나올 수 있어서, 반드시
-// 재생 호출보다 앞서 볼륨을 낮춰둡니다).
-// 3단계: 재생이 실제로 시작된 게 확인되면(PLAYING) fadeInMusicVolume()이 이어서
-// 5초간 볼륨을 0 -> 100으로 서서히 올립니다.
-function scheduleMusicStart(){
+// 음소거 없이 볼륨만 0으로 맞춘 상태로 바로 재생을 시작합니다.
+function playMusic(){
   if(!ytPlayer) return;
-  clearTimeout(musicMuteTimer);
   ytPlayer.setVolume(0);
-  musicMuteTimer = setTimeout(function(){
-    ytPlayer.setVolume(0);
-    ytPlayer.unMute();
-    ytPlayer.playVideo();
-  }, BG_MUSIC_MUTE_MS);
+  ytPlayer.playVideo();
 }
 
 // 노래가 갑자기 뚝 시작되지 않도록, 재생될 때마다 볼륨을 0에서 서서히 100까지 올립니다(페이드인/크레센도).
-// 사람 귀는 소리 크기를 선형이 아니라 로그적으로 느끼기 때문에, 볼륨을 %로 똑같이
-// 올려도 초반 몇 % 구간에서 대부분의 "커지는 느낌"이 몰려 갑자기 커진 것처럼 들립니다.
-// 그래서 값 자체를 선형(1,2,3...)이 아니라 세제곱 곡선으로 올려서, 처음엔 아주 천천히
-// 커지다가 뒤로 갈수록 빨리 커지게 해 귀에는 고르게 커지는 것처럼 들리게 합니다.
 function fadeInMusicVolume(){
   if(!ytPlayer) return;
   clearInterval(musicFadeTimer);
   ytPlayer.setVolume(0);
-  const steps = 40;
+  const steps = 20;
   const stepTime = BG_MUSIC_FADE_MS / steps;
   let i = 0;
   musicFadeTimer = setInterval(function(){
     i++;
-    const progress = i / steps;
-    const eased = Math.pow(progress, 3);
-    ytPlayer.setVolume(Math.min(Math.round(eased * 100), 100));
+    ytPlayer.setVolume(Math.min(Math.round((i / steps) * 100), 100));
     if(i >= steps) clearInterval(musicFadeTimer);
   }, stepTime);
 }
@@ -1512,15 +1487,7 @@ function updateMusicButton(){
 function toggleMusic(){
   hideSoundToast();
   if(!ytReady || !ytPlayer) return;
-  if(musicPlaying){
-    ytPlayer.pauseVideo();
-  } else {
-    // 버튼으로 직접 켜는 경우는 이미 사용자가 방금 누른 시점이라 1.5초씩
-    // 더 기다릴 필요 없이 바로 볼륨 0에서 재생을 시작하고 페이드인만 이어집니다.
-    ytPlayer.setVolume(0);
-    ytPlayer.unMute();
-    ytPlayer.playVideo();
-  }
+  if(musicPlaying){ ytPlayer.pauseVideo(); } else { playMusic(); }
 }
 
 // 브라우저가 소리 있는 자동재생을 막은 경우, 화면에서 처음 일어나는
@@ -1531,7 +1498,7 @@ function bindFirstInteractionAutoplay(){
   if(firstInteractionBound) return;
   firstInteractionBound = true;
   const startOnce = function(){
-    if(!musicPlaying && ytReady && ytPlayer){ scheduleMusicStart(); }
+    if(!musicPlaying && ytReady && ytPlayer){ playMusic(); }
     hideSoundToast();
     document.removeEventListener('click', startOnce);
     document.removeEventListener('touchstart', startOnce);
