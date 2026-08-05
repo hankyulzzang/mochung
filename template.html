@@ -158,7 +158,13 @@
     aspect-ratio:3/4;
     margin-bottom:26px;
   }
-  .hero-photo-crop{ width:100%; height:100%; overflow:hidden; }
+  .hero-photo-crop{
+    width:100%;
+    height:100%;
+    overflow:hidden;
+    -webkit-mask-image:linear-gradient(to bottom, #000 calc(100% - 0.8cm), transparent 100%);
+    mask-image:linear-gradient(to bottom, #000 calc(100% - 0.8cm), transparent 100%);
+  }
   .hero-photo img{ width:100%; height:100%; object-fit:cover; display:block; }
   .hero-wedding-script{
     position:absolute;
