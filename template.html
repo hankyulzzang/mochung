@@ -1419,6 +1419,7 @@ function copyInviteLink(e){
 const BG_MUSIC_VIDEO_ID = 'e1mOmdykmwI';
 const BG_MUSIC_START = 30; // 이 지점부터 재생 (반복될 때도 항상 여기서 다시 시작)
 const BG_MUSIC_FADE_MS = 5000; // 재생 시작 후 이 시간(ms) 동안 볼륨 0 -> 100 서서히 커짐(페이드인)
+const BG_MUSIC_MUTE_MS = 1500; // 재생을 시작한 뒤 이 시간(ms) 동안은 완전히 무음 상태를 유지했다가 그 다음에 페이드인을 시작
 let ytPlayer = null;
 let ytReady = false;
 let musicPlaying = false;
@@ -1504,7 +1505,7 @@ function fadeInMusicVolume(){
       ytPlayer.setVolume(Math.min(Math.round(eased * 100), 100));
       if(i >= steps) clearInterval(musicFadeTimer);
     }, stepTime);
-  }, 250);
+  }, BG_MUSIC_MUTE_MS);
 }
 
 function updateMusicButton(){
