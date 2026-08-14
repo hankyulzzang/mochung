@@ -323,6 +323,27 @@
   .acc-copy{ flex:0 0 auto; padding:6px 12px; border:1px solid var(--gold-soft); border-radius:4px; background:#FFFFFF; color:var(--gold); font-family:'Gowun Dodum', sans-serif; font-size:14px; cursor:pointer; }
   .acc-copy.copied{ background:var(--gold); color:#FFFFFF; border-color:var(--gold); }
 
+  .rsvp-box{ text-align:left; }
+  .rsvp-field{ margin-bottom:14px; }
+  .rsvp-label{ display:block; font-size:13px; color:var(--green-soft); margin-bottom:6px; }
+  .rsvp-input{ width:100%; padding:11px 12px; border:1px solid var(--gold-soft); border-radius:6px; font-size:14px; font-family:'Gowun Dodum', sans-serif; color:var(--green); background:#FFFFFF; }
+  .rsvp-input:focus{ outline:2px solid var(--gold-soft); outline-offset:1px; }
+  textarea.rsvp-input{ resize:vertical; min-height:72px; }
+  .rsvp-radio-row{ display:flex; gap:10px; }
+  .rsvp-radio-btn{ flex:1; padding:11px; border:1px solid var(--gold-soft); border-radius:6px; text-align:center; font-size:14px; cursor:pointer; }
+  .rsvp-radio-btn.selected{ background:var(--gold); color:#FFFFFF; border-color:var(--gold); }
+  .rsvp-submit{ width:100%; padding:13px; background:var(--green); color:#FFFFFF; border:none; border-radius:6px; font-size:15px; font-weight:700; font-family:'Gowun Dodum', sans-serif; cursor:pointer; margin-top:4px; }
+  .rsvp-submit:disabled{ opacity:0.5; cursor:not-allowed; }
+  .rsvp-msg{ font-size:13px; text-align:center; margin:10px 0 0; min-height:16px; }
+  .rsvp-msg.success{ color:var(--green); }
+  .rsvp-msg.error{ color:#B4432E; }
+
+  .guestbook-list{ text-align:left; margin-top:22px; display:flex; flex-direction:column; gap:10px; }
+  .guestbook-item{ border:1px solid var(--gold-soft); border-radius:6px; padding:12px 14px; }
+  .guestbook-name{ font-size:13px; font-weight:700; color:var(--gold); margin:0 0 4px; }
+  .guestbook-message{ font-size:14px; color:var(--green); margin:0; white-space:pre-line; line-height:1.6; }
+  .guestbook-empty{ font-size:13px; color:var(--green-soft); text-align:center; margin-top:18px; }
+
   .film-section{ padding:44px 0; text-align:center; }
   .film-strip{
     display:flex;
@@ -613,6 +634,43 @@
   </section>
 
   <section>
+    <p class="eyebrow fadeup">참석 여부 회신</p>
+    <p class="acc-intro fadeup">참석 여부를 미리 알려주시면 준비에 큰 도움이 됩니다.</p>
+    <div class="rsvp-box fadeup">
+      <div class="rsvp-field">
+        <label class="rsvp-label">이름</label>
+        <input class="rsvp-input" type="text" id="rsvpName" placeholder="성함을 입력해주세요">
+      </div>
+      <div class="rsvp-field">
+        <label class="rsvp-label">참석 여부</label>
+        <div class="rsvp-radio-row" id="rsvpAttendRow">
+          <div class="rsvp-radio-btn" data-value="참석" onclick="selectRsvpAttend('참석')">참석</div>
+          <div class="rsvp-radio-btn" data-value="불참" onclick="selectRsvpAttend('불참')">불참</div>
+        </div>
+      </div>
+      <div id="rsvpAttendDetails" style="display:none;">
+        <div class="rsvp-field">
+          <label class="rsvp-label">참석 인원(본인 포함)</label>
+          <input class="rsvp-input" type="number" id="rsvpCount" min="1" value="1">
+        </div>
+        <div class="rsvp-field">
+          <label class="rsvp-label">식사 여부</label>
+          <div class="rsvp-radio-row" id="rsvpMealRow">
+            <div class="rsvp-radio-btn" data-value="예" onclick="selectRsvpMeal('예')">예</div>
+            <div class="rsvp-radio-btn" data-value="아니오" onclick="selectRsvpMeal('아니오')">아니오</div>
+          </div>
+        </div>
+      </div>
+      <div class="rsvp-field">
+        <label class="rsvp-label">연락처 (선택)</label>
+        <input class="rsvp-input" type="tel" id="rsvpPhone" placeholder="010-0000-0000">
+      </div>
+      <button class="rsvp-submit" id="rsvpSubmitBtn" type="button" onclick="submitRsvp()">보내기</button>
+      <p class="rsvp-msg" id="rsvpMsg"></p>
+    </div>
+  </section>
+
+  <section>
     <p class="eyebrow fadeup">사진 갤러리</p>
     <div class="gallery-grid fadeup" id="galleryMain"></div>
     <div class="gallery-more" id="galleryMore"></div>
@@ -692,6 +750,24 @@
     <p class="film-hint fadeup">옆으로 넘겨서 더보기</p>
   </section>
 
+  <section>
+    <p class="eyebrow fadeup">방명록</p>
+    <p class="acc-intro fadeup">축하의 마음을 남겨주세요.</p>
+    <div class="rsvp-box fadeup">
+      <div class="rsvp-field">
+        <label class="rsvp-label">이름</label>
+        <input class="rsvp-input" type="text" id="gbName" placeholder="성함을 입력해주세요">
+      </div>
+      <div class="rsvp-field">
+        <label class="rsvp-label">메시지</label>
+        <textarea class="rsvp-input" id="gbMessage" placeholder="축하 메시지를 남겨주세요"></textarea>
+      </div>
+      <button class="rsvp-submit" id="gbSubmitBtn" type="button" onclick="submitGuestbook()">남기기</button>
+      <p class="rsvp-msg" id="gbMsg"></p>
+    </div>
+    <div class="guestbook-list fadeup" id="guestbookList"></div>
+  </section>
+
   <div class="share-section">
     <img id="shareBgImg" alt="">
     <div class="share-overlay fadeup">
@@ -744,7 +820,10 @@ const CONFIG = {
   kakaoJsKey: "95af2fbc5bfb334e867ed5d1c5f8c7fb",
   // 카카오 개발자 콘솔 > 도구 > 메시지 템플릿에서 만든 "피드형" 커스텀 템플릿 ID
   // (변수: THU=사진, title=제목, desc=본문 / 버튼 링크는 고정으로 이 사이트 주소를 가리킴)
-  kakaoTemplateId: 135773
+  kakaoTemplateId: 135773,
+  // 참석 여부 회신/방명록을 구글시트에 저장해주는 Apps Script 웹앱 주소.
+  // 시트의 "RSVP연동 URL" 칸에 넣어두면 이 값을 그 값으로 덮어씁니다.
+  rsvpApiUrl: ""
 };
 
 // 시트 A열(키) 이름의 후보 목록입니다. 앞으로는 깔끔한 영문 키(wedding_date 등)를
@@ -763,7 +842,8 @@ const SHEET_KEYS = {
   sharePhoto: ['share_photo', 'share'],
   kakaoPhoto: ['kakao_thumbnail_photo', '카톡전송 썸네일'],
   kakaoText: ['kakao_thumbnail_text', '썸네일 문구'],
-  footerText: ['footer_text', '최하단 문구']
+  footerText: ['footer_text', '최하단 문구'],
+  rsvpApiUrl: ['rsvp_api_url', 'RSVP연동 URL', 'RSVP 연동 URL']
 };
 
 // 카카오톡 공유(사용자 정의 템플릿) 카드에 채워 넣을 값. 시트를 못 불러왔을 때는
@@ -1174,6 +1254,155 @@ function copyAccount(e, id){
   }
 }
 
+let rsvpAttend = null;
+let rsvpMeal = null;
+
+function selectRsvpAttend(value){
+  rsvpAttend = value;
+  document.querySelectorAll('#rsvpAttendRow .rsvp-radio-btn').forEach(function(btn){
+    btn.classList.toggle('selected', btn.dataset.value === value);
+  });
+  document.getElementById('rsvpAttendDetails').style.display = (value === '참석') ? 'block' : 'none';
+}
+
+function selectRsvpMeal(value){
+  rsvpMeal = value;
+  document.querySelectorAll('#rsvpMealRow .rsvp-radio-btn').forEach(function(btn){
+    btn.classList.toggle('selected', btn.dataset.value === value);
+  });
+}
+
+function escapeHtml(s){
+  return String(s)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+async function submitRsvp(){
+  const msgEl = document.getElementById('rsvpMsg');
+  const name = document.getElementById('rsvpName').value.trim();
+
+  if(!CONFIG.rsvpApiUrl){
+    msgEl.textContent = '아직 연결되지 않은 기능입니다.';
+    msgEl.className = 'rsvp-msg error';
+    return;
+  }
+  if(!name){
+    msgEl.textContent = '이름을 입력해주세요.';
+    msgEl.className = 'rsvp-msg error';
+    return;
+  }
+  if(!rsvpAttend){
+    msgEl.textContent = '참석 여부를 선택해주세요.';
+    msgEl.className = 'rsvp-msg error';
+    return;
+  }
+  if(rsvpAttend === '참석' && !rsvpMeal){
+    msgEl.textContent = '식사 여부를 선택해주세요.';
+    msgEl.className = 'rsvp-msg error';
+    return;
+  }
+
+  const btn = document.getElementById('rsvpSubmitBtn');
+  btn.disabled = true;
+  msgEl.textContent = '';
+  msgEl.className = 'rsvp-msg';
+
+  const count = document.getElementById('rsvpCount').value || '1';
+  const phone = document.getElementById('rsvpPhone').value.trim();
+
+  try{
+    // Apps Script 웹앱은 fetch POST 요청에 대해 CORS 응답 헤더를 제대로 안 붙여줘서
+    // 일반 방식으로는 요청 자체가 브라우저에서 막힙니다. no-cors 모드로 보내면
+    // 응답 내용은 읽을 수 없지만 요청 자체는 정상적으로 서버에 도달하고 처리됩니다.
+    await fetch(CONFIG.rsvpApiUrl, {
+      method: 'POST',
+      mode: 'no-cors',
+      body: new URLSearchParams({
+        type: 'rsvp',
+        name: name,
+        attend: rsvpAttend,
+        count: rsvpAttend === '참석' ? count : '',
+        meal: rsvpAttend === '참석' ? rsvpMeal : '',
+        phone: phone
+      })
+    });
+    msgEl.textContent = '회신이 접수되었습니다. 감사합니다.';
+    msgEl.className = 'rsvp-msg success';
+    btn.textContent = '완료되었습니다';
+  }catch(e){
+    msgEl.textContent = '전송에 실패했습니다. 잠시 후 다시 시도해주세요.';
+    msgEl.className = 'rsvp-msg error';
+    btn.disabled = false;
+  }
+}
+
+async function submitGuestbook(){
+  const msgEl = document.getElementById('gbMsg');
+  const nameEl = document.getElementById('gbName');
+  const messageEl = document.getElementById('gbMessage');
+  const name = nameEl.value.trim();
+  const message = messageEl.value.trim();
+
+  if(!CONFIG.rsvpApiUrl){
+    msgEl.textContent = '아직 연결되지 않은 기능입니다.';
+    msgEl.className = 'rsvp-msg error';
+    return;
+  }
+  if(!name || !message){
+    msgEl.textContent = '이름과 메시지를 모두 입력해주세요.';
+    msgEl.className = 'rsvp-msg error';
+    return;
+  }
+
+  const btn = document.getElementById('gbSubmitBtn');
+  btn.disabled = true;
+  msgEl.textContent = '';
+  msgEl.className = 'rsvp-msg';
+
+  try{
+    await fetch(CONFIG.rsvpApiUrl, {
+      method: 'POST',
+      mode: 'no-cors',
+      body: new URLSearchParams({
+        type: 'guestbook',
+        name: name,
+        message: message
+      })
+    });
+    msgEl.textContent = '메시지가 등록되었습니다. 감사합니다.';
+    msgEl.className = 'rsvp-msg success';
+    nameEl.value = '';
+    messageEl.value = '';
+    setTimeout(loadGuestbook, 800);
+  }catch(e){
+    msgEl.textContent = '전송에 실패했습니다. 잠시 후 다시 시도해주세요.';
+    msgEl.className = 'rsvp-msg error';
+  }finally{
+    btn.disabled = false;
+  }
+}
+
+async function loadGuestbook(){
+  if(!CONFIG.rsvpApiUrl) return;
+  const listEl = document.getElementById('guestbookList');
+  try{
+    const res = await fetch(CONFIG.rsvpApiUrl + '?_=' + Date.now(), { cache: 'no-store' });
+    const entries = await res.json();
+    if(!Array.isArray(entries) || entries.length === 0){
+      listEl.innerHTML = '<p class="guestbook-empty">아직 남겨진 메시지가 없습니다.</p>';
+      return;
+    }
+    listEl.innerHTML = entries.slice().reverse().map(function(entry){
+      return '<div class="guestbook-item"><p class="guestbook-name">' + escapeHtml(entry.name || '익명') + '</p><p class="guestbook-message">' + escapeHtml(entry.message || '') + '</p></div>';
+    }).join('');
+  }catch(e){
+    // 방명록을 못 불러와도 나머지 페이지에는 영향 없게 조용히 무시합니다.
+  }
+}
+
 async function loadFromSheet(){
   if(!CONFIG.sheetCsvUrl){ hideIntro(); return; }
   try{
@@ -1322,6 +1551,12 @@ async function loadFromSheet(){
     const footerText = pickField(data, SHEET_KEYS.footerText);
     if(footerText){
       document.getElementById('siteFooterText').textContent = footerText;
+    }
+
+    const rsvpApiUrl = pickField(data, SHEET_KEYS.rsvpApiUrl);
+    if(rsvpApiUrl){
+      CONFIG.rsvpApiUrl = rsvpApiUrl;
+      loadGuestbook();
     }
 
     const babyPhotos = [];
