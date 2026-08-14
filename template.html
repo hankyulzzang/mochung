@@ -1465,17 +1465,16 @@ function copyInviteLink(e){
    처음 발생하는 탭/스크롤을 감지해 그 즉시 재생합니다. 우측 상단 버튼으로도
    언제든 켜고 끌 수 있습니다.
    ========================================================= */
-const BG_MUSIC_DRIVE_ID = '1cLKn4VWr7xkkPCP67COfQKCBZrf_1BjA';
 const BG_MUSIC_START = 30; // 이 지점부터 재생 (반복/최초 재생 시 항상 여기서 시작)
 const BG_MUSIC_FADE_MS = 3000; // 재생 시작 후 이 시간(ms) 동안 볼륨 0 -> BG_MUSIC_VOLUME 서서히 커짐(페이드인, 항상 3제곱 곡선 사용)
 const BG_MUSIC_VOLUME = 0.3; // 페이드인이 끝난 뒤 유지되는 최종 볼륨(0~1). 30% 수준
 const bgAudio = document.getElementById('bgAudio');
-// 구글드라이브의 예전 uc?export=download 방식은 요즘 "바이러스 검사를 할 수 없습니다"
-// 확인 페이지(HTML)를 돌려줘서 오디오 태그가 재생을 못 하는 경우가 많습니다.
-// 그래서 다운로드 확인 절차를 우회하는 최신 direct-download 호스트를 씁니다.
-bgAudio.src = 'https://drive.usercontent.google.com/download?id=' + BG_MUSIC_DRIVE_ID + '&export=download&confirm=t';
+// 구글드라이브 다운로드 주소를 브라우저가 "파일 다운로드"로 취급해버려서(재생이
+// 아니라 저장 여부를 물어봄), 우리 서버(api/music.js)가 대신 파일을 받아 평범한
+// 오디오 응답으로 돌려주는 프록시를 거칩니다.
+bgAudio.src = '/api/music';
 bgAudio.addEventListener('error', function(){
-  console.error('배경음악 파일을 불러오지 못했습니다. 구글드라이브 공유설정이 "링크가 있는 모든 사용자"인지 확인해주세요.', bgAudio.error);
+  console.error('배경음악 파일을 불러오지 못했습니다.', bgAudio.error);
 });
 let musicPlaying = false;
 let musicFadeTimer = null;
