@@ -1478,6 +1478,7 @@ bgAudio.addEventListener('error', function(){
 });
 let musicPlaying = false;
 let musicFadeTimer = null;
+let musicUnmuteTimer = null;
 
 // 대부분의 브라우저는 사용자 동작 없이는 "소리 있는" 자동재생을 막지만, 무음
 // 상태로 재생을 시작하는 것은 허용합니다. 그래서 일단 무음으로 재생을 시작하고,
@@ -1503,13 +1504,20 @@ function playMusicFromStart(){
 bgAudio.addEventListener('play', function(){
   musicPlaying = true;
   updateMusicButton();
-  // 재생이 이미 시작된 뒤라 대부분 브라우저에서 무음 해제가 막히지 않습니다.
-  bgAudio.muted = false;
-  fadeInMusicVolume();
+  // 재생이 막 시작된 처음 순간에는 기기/브라우저 쪽에서 짧게 "틱" 소리가 섞여
+  // 나올 수 있습니다(디코더가 되감은 지점 근처에서 프레임을 다시 맞추는 과정).
+  // 그래서 무음을 바로 풀지 않고, 아주 짧게 무음 상태로 대기해 그 구간을
+  // 지나보낸 뒤에 무음을 풀고 페이드인을 시작합니다.
+  clearTimeout(musicUnmuteTimer);
+  musicUnmuteTimer = setTimeout(function(){
+    bgAudio.muted = false;
+    fadeInMusicVolume();
+  }, 150);
 });
 bgAudio.addEventListener('pause', function(){
   musicPlaying = false;
   updateMusicButton();
+  clearTimeout(musicUnmuteTimer);
   clearInterval(musicFadeTimer);
 });
 bgAudio.addEventListener('ended', function(){
