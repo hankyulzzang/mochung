@@ -1467,15 +1467,20 @@ function copyInviteLink(e){
    ========================================================= */
 const BG_MUSIC_DRIVE_ID = '1cLKn4VWr7xkkPCP67COfQKCBZrf_1BjA';
 const BG_MUSIC_START = 30; // 이 지점부터 재생 (반복/최초 재생 시 항상 여기서 시작)
-const BG_MUSIC_FADE_MS = 3000; // 재생 시작 후 이 시간(ms) 동안 볼륨 0 -> 1 서서히 커짐(페이드인, 항상 3제곱 곡선 사용)
+const BG_MUSIC_FADE_MS = 3000; // 재생 시작 후 이 시간(ms) 동안 볼륨 0 -> BG_MUSIC_VOLUME 서서히 커짐(페이드인, 항상 3제곱 곡선 사용)
+const BG_MUSIC_VOLUME = 0.3; // 페이드인이 끝난 뒤 유지되는 최종 볼륨(0~1). 30% 수준
 const bgAudio = document.getElementById('bgAudio');
 bgAudio.src = 'https://drive.google.com/uc?export=download&id=' + BG_MUSIC_DRIVE_ID;
 let musicPlaying = false;
 let musicFadeTimer = null;
 
-// 볼륨을 0으로 낮춘 뒤 지금 위치 그대로 재생만 시작합니다(되감지 않음 - 일시정지 후
-// 다시 켤 때 쓰임).
+// 대부분의 브라우저는 사용자 동작 없이는 "소리 있는" 자동재생을 막지만, 무음
+// 상태로 재생을 시작하는 것은 허용합니다. 그래서 일단 무음으로 재생을 시작하고,
+// 재생이 실제로 시작된 걸 확인한 뒤(아래 'play' 리스너) 바로 무음을 풀어
+// 사용자 동작 없이도 자동재생이 되도록 합니다. 볼륨은 0에서 시작해 페이드인되므로
+// 무음을 푸는 순간에도 소리가 갑자기 나지 않습니다.
 function playMusic(){
+  bgAudio.muted = true;
   bgAudio.volume = 0;
   bgAudio.play().catch(function(){});
 }
@@ -1493,6 +1498,8 @@ function playMusicFromStart(){
 bgAudio.addEventListener('play', function(){
   musicPlaying = true;
   updateMusicButton();
+  // 재생이 이미 시작된 뒤라 대부분 브라우저에서 무음 해제가 막히지 않습니다.
+  bgAudio.muted = false;
   fadeInMusicVolume();
 });
 bgAudio.addEventListener('pause', function(){
@@ -1520,7 +1527,7 @@ function fadeInMusicVolume(){
     i++;
     const progress = i / steps;
     const eased = Math.pow(progress, 3);
-    bgAudio.volume = Math.min(eased, 1);
+    bgAudio.volume = Math.min(eased * BG_MUSIC_VOLUME, BG_MUSIC_VOLUME);
     if(i >= steps) clearInterval(musicFadeTimer);
   }, stepTime);
 }
