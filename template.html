@@ -1470,7 +1470,10 @@ const BG_MUSIC_START = 30; // 이 지점부터 재생 (반복/최초 재생 시 
 const BG_MUSIC_FADE_MS = 3000; // 재생 시작 후 이 시간(ms) 동안 볼륨 0 -> BG_MUSIC_VOLUME 서서히 커짐(페이드인, 항상 3제곱 곡선 사용)
 const BG_MUSIC_VOLUME = 0.3; // 페이드인이 끝난 뒤 유지되는 최종 볼륨(0~1). 30% 수준
 const bgAudio = document.getElementById('bgAudio');
-bgAudio.src = 'https://drive.google.com/uc?export=download&id=' + BG_MUSIC_DRIVE_ID;
+bgAudio.src = 'https://drive.google.com/uc?export=download&confirm=t&id=' + BG_MUSIC_DRIVE_ID;
+bgAudio.addEventListener('error', function(){
+  console.error('배경음악 파일을 불러오지 못했습니다. 구글드라이브 공유설정이 "링크가 있는 모든 사용자"인지 확인해주세요.', bgAudio.error);
+});
 let musicPlaying = false;
 let musicFadeTimer = null;
 
