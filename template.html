@@ -173,7 +173,7 @@
        위치를 옮겨도 실제로는 적용되지 않았습니다. 그래서 위치는 transform이
        아니라 bottom 값으로 잡습니다(.fadeup은 opacity/transform만 건드리므로
        bottom은 그대로 유지됩니다). */
-    bottom:calc(10px - 0.5cm);
+    bottom:calc(10px - 1cm);
     z-index:2;
     margin:0;
     text-align:center;
@@ -713,18 +713,7 @@ SPECIAL THANKS
 
 <div id="ytPlayer" style="position:fixed; width:1px; height:1px; top:-9999px; left:-9999px; overflow:hidden;"></div>
 <button id="musicToggle" class="music-fab" onclick="toggleMusic()" aria-label="배경음악 재생/정지">
-  <svg class="music-icon" width="28" height="28" viewBox="0 0 24 24">
-    <path d="M15.5 3.5 L15.5 15.3" stroke="#1B3A2B" stroke-width="1.6" stroke-linecap="round" fill="none"/>
-    <path d="M15.5 3.5 C 20 4, 21.3 7.6, 18.7 10.6" stroke="#1B3A2B" stroke-width="1.6" stroke-linecap="round" fill="none"/>
-    <circle cx="10.5" cy="17" r="6.3" fill="#1c1c1c"/>
-    <circle cx="10.5" cy="17" r="5.4" fill="#FFFFFF"/>
-    <path d="M10.5 17 L10.5 13.4 A3.6 3.6 0 0 1 13.618 15.2 Z" fill="#E8802C"/>
-    <path d="M10.5 17 L13.618 15.2 A3.6 3.6 0 0 1 13.618 18.8 Z" fill="#F3C23D"/>
-    <path d="M10.5 17 L13.618 18.8 A3.6 3.6 0 0 1 10.5 20.6 Z" fill="#F2A6A0"/>
-    <path d="M10.5 17 L10.5 20.6 A3.6 3.6 0 0 1 7.382 18.8 Z" fill="#7FAF4E"/>
-    <path d="M10.5 17 L7.382 18.8 A3.6 3.6 0 0 1 7.382 15.2 Z" fill="#D8B27C"/>
-    <path d="M10.5 17 L7.382 15.2 A3.6 3.6 0 0 1 10.5 13.4 Z" fill="#F3C23D"/>
-  </svg>
+  <span class="music-icon">&#9834;</span>
 </button>
 <div id="soundToast" class="sound-toast">음악이 준비되어있습니다.<br>소리를 켜주세요.</div>
 
@@ -1293,7 +1282,7 @@ async function loadFromSheet(){
     });
 
     const photos = [];
-    for(let i=1;i<=30;i++){
+    for(let i=1;i<=50;i++){
       if(data['photo'+i]) photos.push(driveDirectUrl(data['photo'+i]));
     }
     if(photos.length) renderGallery(photos);
