@@ -716,7 +716,7 @@ SPECIAL THANKS
 
 </div>
 
-<div id="ytPlayer" style="position:fixed; width:1px; height:1px; top:-9999px; left:-9999px; overflow:hidden;"></div>
+<audio id="bgAudio" preload="auto"></audio>
 <button id="musicToggle" class="music-fab" onclick="toggleMusic()" aria-label="배경음악 재생/정지">
   <span class="music-icon">&#9834;</span>
 </button>
@@ -1456,70 +1456,63 @@ function copyInviteLink(e){
 }
 
 /* =========================================================
-   배경음악: 유튜브 IFrame API로 재생합니다.
+   배경음악: 구글 드라이브에 올려둔 음원 파일을 <audio> 태그로 직접 재생합니다.
+   (예전엔 유튜브 IFrame API를 썼는데, 다른 사이트 iframe이라 볼륨 명령이
+   비동기로 전달되면서 재생 시작 순간 소리가 살짝 튀는 문제가 있었습니다.
+   <audio>는 이 페이지 안에서 바로 볼륨을 다루기 때문에 그런 지연이 없습니다.)
    청첩장을 열자마자 재생을 시도하고, 브라우저가 소리 있는 자동재생을
    막아서 실패하면(대부분의 모바일 브라우저가 그렇습니다) 화면에서
-   처음 발생하는 탭/스크롤을 감지해 그 즉시 재생합니다. 그래서 실제로는
-   여는 순간 ~ 첫 터치 사이, 거의 바로 재생됩니다. 우측 상단 버튼으로도
+   처음 발생하는 탭/스크롤을 감지해 그 즉시 재생합니다. 우측 상단 버튼으로도
    언제든 켜고 끌 수 있습니다.
    ========================================================= */
-const BG_MUSIC_VIDEO_ID = 'CnEqrgMlWLQ';
-const BG_MUSIC_START = 30; // 이 지점부터 재생 (반복될 때도 항상 여기서 다시 시작)
-const BG_MUSIC_FADE_MS = 3000; // 재생 시작 후 이 시간(ms) 동안 볼륨 0 -> 100 서서히 커짐(페이드인, 항상 3제곱 곡선 사용)
-let ytPlayer = null;
-let ytReady = false;
+const BG_MUSIC_DRIVE_ID = '1cLKn4VWr7xkkPCP67COfQKCBZrf_1BjA';
+const BG_MUSIC_START = 30; // 이 지점부터 재생 (반복/최초 재생 시 항상 여기서 시작)
+const BG_MUSIC_FADE_MS = 3000; // 재생 시작 후 이 시간(ms) 동안 볼륨 0 -> 1 서서히 커짐(페이드인, 항상 3제곱 곡선 사용)
+const bgAudio = document.getElementById('bgAudio');
+bgAudio.src = 'https://drive.google.com/uc?export=download&id=' + BG_MUSIC_DRIVE_ID;
 let musicPlaying = false;
 let musicFadeTimer = null;
 
-function onYouTubeIframeAPIReady(){
-  ytPlayer = new YT.Player('ytPlayer', {
-    videoId: BG_MUSIC_VIDEO_ID,
-    playerVars: {
-      controls: 0,
-      start: BG_MUSIC_START,
-      playsinline: 1
-    },
-    events: {
-      onReady: function(){
-        ytReady = true;
-        playMusic();
-        bindFirstInteractionAutoplay();
-      },
-      onStateChange: function(evt){
-        if(evt.data === YT.PlayerState.PLAYING){
-          musicPlaying = true;
-          updateMusicButton();
-          fadeInMusicVolume();
-        } else if(evt.data === YT.PlayerState.PAUSED){
-          musicPlaying = false;
-          updateMusicButton();
-          clearInterval(musicFadeTimer);
-        } else if(evt.data === YT.PlayerState.ENDED){
-          // 끝까지 재생되면 처음(0초)이 아니라 항상 시작 지점으로 되돌아가 이어서 반복 재생합니다.
-          ytPlayer.seekTo(BG_MUSIC_START, true);
-          playMusic();
-        }
-      }
-    }
-  });
-}
-
-// 음소거 없이 볼륨만 0으로 맞춘 상태로 바로 재생을 시작합니다.
+// 볼륨을 0으로 낮춘 뒤 지금 위치 그대로 재생만 시작합니다(되감지 않음 - 일시정지 후
+// 다시 켤 때 쓰임).
 function playMusic(){
-  if(!ytPlayer) return;
-  ytPlayer.setVolume(0);
-  ytPlayer.playVideo();
+  bgAudio.volume = 0;
+  bgAudio.play().catch(function(){});
 }
 
-// 노래가 갑자기 뚝 시작되지 않도록, 재생될 때마다 볼륨을 0에서 서서히 100까지 올립니다(페이드인/크레센도).
+// BG_MUSIC_START 지점으로 되감은 뒤 재생을 시작합니다(최초 재생, 반복 재생 시 사용).
+function playMusicFromStart(){
+  function seekAndPlay(){
+    bgAudio.currentTime = BG_MUSIC_START;
+    playMusic();
+  }
+  if(bgAudio.readyState >= 1){ seekAndPlay(); }
+  else { bgAudio.addEventListener('loadedmetadata', seekAndPlay, { once:true }); }
+}
+
+bgAudio.addEventListener('play', function(){
+  musicPlaying = true;
+  updateMusicButton();
+  fadeInMusicVolume();
+});
+bgAudio.addEventListener('pause', function(){
+  musicPlaying = false;
+  updateMusicButton();
+  clearInterval(musicFadeTimer);
+});
+bgAudio.addEventListener('ended', function(){
+  // 끝까지 재생되면 처음(0초)이 아니라 항상 시작 지점으로 되돌아가 이어서 반복 재생합니다.
+  playMusicFromStart();
+});
+
+// 노래가 갑자기 뚝 시작되지 않도록, 재생될 때마다 볼륨을 0에서 서서히 1까지 올립니다(페이드인/크레센도).
 // 사람 귀는 소리 크기를 선형이 아니라 로그적으로 느끼기 때문에, 볼륨을 %로 똑같이
 // 올려도 초반 몇 % 구간에서 대부분의 "커지는 느낌"이 몰려 갑자기 커진 것처럼 들립니다.
 // 그래서 값 자체를 선형(1,2,3...)이 아니라 세제곱 곡선으로 올려서, 처음엔 아주 천천히
 // 커지다가 뒤로 갈수록 빨리 커지게 해 귀에는 고르게 커지는 것처럼 들리게 합니다.
 function fadeInMusicVolume(){
-  if(!ytPlayer) return;
   clearInterval(musicFadeTimer);
-  ytPlayer.setVolume(0);
+  bgAudio.volume = 0;
   const steps = 40;
   const stepTime = BG_MUSIC_FADE_MS / steps;
   let i = 0;
@@ -1527,7 +1520,7 @@ function fadeInMusicVolume(){
     i++;
     const progress = i / steps;
     const eased = Math.pow(progress, 3);
-    ytPlayer.setVolume(Math.min(Math.round(eased * 100), 100));
+    bgAudio.volume = Math.min(eased, 1);
     if(i >= steps) clearInterval(musicFadeTimer);
   }, stepTime);
 }
@@ -1539,8 +1532,7 @@ function updateMusicButton(){
 
 function toggleMusic(){
   hideSoundToast();
-  if(!ytReady || !ytPlayer) return;
-  if(musicPlaying){ ytPlayer.pauseVideo(); } else { playMusic(); }
+  if(musicPlaying){ bgAudio.pause(); } else { playMusic(); }
 }
 
 // 브라우저가 소리 있는 자동재생을 막은 경우, 화면에서 처음 일어나는
@@ -1551,7 +1543,7 @@ function bindFirstInteractionAutoplay(){
   if(firstInteractionBound) return;
   firstInteractionBound = true;
   const startOnce = function(){
-    if(!musicPlaying && ytReady && ytPlayer){ playMusic(); }
+    if(!musicPlaying){ playMusicFromStart(); }
     hideSoundToast();
     document.removeEventListener('click', startOnce);
     document.removeEventListener('touchstart', startOnce);
@@ -1562,8 +1554,10 @@ function bindFirstInteractionAutoplay(){
   document.addEventListener('scroll', startOnce, { once:true, passive:true });
 }
 
+playMusicFromStart();
+bindFirstInteractionAutoplay();
+
 loadFromSheet();
 </script>
-<script src="https://www.youtube.com/iframe_api"></script>
 </body>
 </html>
