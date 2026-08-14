@@ -1465,7 +1465,7 @@ function copyInviteLink(e){
    처음 발생하는 탭/스크롤을 감지해 그 즉시 재생합니다. 우측 상단 버튼으로도
    언제든 켜고 끌 수 있습니다.
    ========================================================= */
-const BG_MUSIC_START = 28; // 이 지점부터 재생 (반복/최초 재생 시 항상 여기서 시작)
+const BG_MUSIC_START = 30; // 이 지점부터 재생 (반복/최초 재생 시 항상 여기서 시작)
 const BG_MUSIC_FADE_MS = 3000; // 재생 시작 후 이 시간(ms) 동안 볼륨 0 -> BG_MUSIC_VOLUME 서서히 커짐(페이드인, 항상 3제곱 곡선 사용)
 const BG_MUSIC_VOLUME = 0.3; // 페이드인이 끝난 뒤 유지되는 최종 볼륨(0~1). 30% 수준
 const bgAudio = document.getElementById('bgAudio');
