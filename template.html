@@ -1466,8 +1466,8 @@ function copyInviteLink(e){
    언제든 켜고 끌 수 있습니다.
    ========================================================= */
 const BG_MUSIC_START = 30; // 이 지점부터 재생 (반복/최초 재생 시 항상 여기서 시작)
-const BG_MUSIC_FADE_MS = 3000; // 재생 시작 후 이 시간(ms) 동안 볼륨 0 -> BG_MUSIC_VOLUME 서서히 커짐(페이드인, 항상 3제곱 곡선 사용)
-const BG_MUSIC_VOLUME = 0.3; // 페이드인이 끝난 뒤 유지되는 최종 볼륨(0~1). 30% 수준
+const BG_MUSIC_FADE_MS = 5000; // 재생 시작 후 이 시간(ms) 동안 볼륨 0 -> BG_MUSIC_VOLUME 서서히 커짐(페이드인, 4제곱 곡선 사용 - 초반에 더 오래 조용함)
+const BG_MUSIC_VOLUME = 0.21; // 페이드인이 끝난 뒤 유지되는 최종 볼륨(0~1)
 const bgAudio = document.getElementById('bgAudio');
 // 구글드라이브 다운로드 주소를 브라우저가 "파일 다운로드"로 취급해버려서(재생이
 // 아니라 저장 여부를 물어봄), 우리 서버(api/music.js)가 대신 파일을 받아 평범한
@@ -1528,7 +1528,7 @@ bgAudio.addEventListener('ended', function(){
 // 노래가 갑자기 뚝 시작되지 않도록, 재생될 때마다 볼륨을 0에서 서서히 1까지 올립니다(페이드인/크레센도).
 // 사람 귀는 소리 크기를 선형이 아니라 로그적으로 느끼기 때문에, 볼륨을 %로 똑같이
 // 올려도 초반 몇 % 구간에서 대부분의 "커지는 느낌"이 몰려 갑자기 커진 것처럼 들립니다.
-// 그래서 값 자체를 선형(1,2,3...)이 아니라 세제곱 곡선으로 올려서, 처음엔 아주 천천히
+// 그래서 값 자체를 선형(1,2,3...)이 아니라 네제곱 곡선으로 올려서, 처음엔 아주 천천히
 // 커지다가 뒤로 갈수록 빨리 커지게 해 귀에는 고르게 커지는 것처럼 들리게 합니다.
 function fadeInMusicVolume(){
   clearInterval(musicFadeTimer);
@@ -1539,7 +1539,7 @@ function fadeInMusicVolume(){
   musicFadeTimer = setInterval(function(){
     i++;
     const progress = i / steps;
-    const eased = Math.pow(progress, 3);
+    const eased = Math.pow(progress, 4);
     bgAudio.volume = Math.min(eased * BG_MUSIC_VOLUME, BG_MUSIC_VOLUME);
     if(i >= steps) clearInterval(musicFadeTimer);
   }, stepTime);
