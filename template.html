@@ -486,32 +486,61 @@
     position:absolute;
     left:0; right:0; bottom:0;
     z-index:3;
-    background:rgba(255,255,255,0.7);
-    backdrop-filter:blur(6px);
-    -webkit-backdrop-filter:blur(6px);
-    border-radius:16px 16px 0 0;
-    padding:10px 24px 14px;
+    background:#FFF8EA;
+    border-radius:18px 18px 0 0;
+    padding:14px 24px 16px;
     text-align:center;
-    box-shadow:0 -4px 20px rgba(0,0,0,0.2);
+    box-shadow:0 -4px 20px rgba(0,0,0,0.25);
   }
   .baby-quiz-sheet.show{ display:block; }
+
+  #lightbox img.baby-sticker{
+    display:none;
+    position:absolute;
+    top:-32px;
+    width:69px;
+    height:auto;
+    filter:drop-shadow(0 4px 6px rgba(0,0,0,0.3));
+  }
+  #lightbox img.baby-sticker.loaded{ display:block; }
+  .baby-sticker.left{ left:14px; transform:rotate(-8deg); }
+  .baby-sticker.right{ right:14px; transform:rotate(7deg); }
+
   .baby-quiz-question{ font-size:16px; font-weight:700; color:var(--green); margin:0 0 8px; }
-  .baby-quiz-choices{ display:flex; gap:10px; }
+  .baby-quiz-choices{ display:flex; gap:10px; justify-content:center; }
   .baby-quiz-choice{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:6px;
     flex:1;
-    padding:8px;
-    border:1px solid var(--gold-soft);
-    border-radius:8px;
+    max-width:130px;
+    padding:8px 10px 8px 8px;
+    border:1.5px solid var(--green);
+    border-radius:999px;
     background:#FFFFFF;
     color:var(--green);
     font-family:'Gowun Dodum', sans-serif;
     font-size:14px;
+    font-weight:700;
     cursor:pointer;
   }
   .baby-quiz-choice:active{ background:var(--gold-soft); }
-  .baby-quiz-result{ font-size:17px; font-weight:700; margin:4px 0 0; min-height:13px; }
-  .baby-quiz-result.correct{ color:#2E7D4F; }
-  .baby-quiz-result.wrong{ color:#B4432E; }
+  .baby-quiz-dot{ width:14px; height:14px; border-radius:50%; flex:0 0 auto; }
+  .baby-quiz-dot.sky{ background:#8FCBEA; }
+  .baby-quiz-dot.sea{ background:#3F8F86; }
+
+  .baby-quiz-result{ margin:8px 0 0; min-height:14px; font-size:14px; font-weight:800; letter-spacing:0.5px; color:var(--gold); }
+  .baby-quiz-result.show{
+    display:inline-block;
+    padding:2px 14px;
+    border:2px solid var(--gold);
+    border-radius:8px;
+    transform:rotate(-3deg);
+    animation:babyStampIn .3s cubic-bezier(.2,1.4,.5,1) both;
+  }
+  .baby-quiz-result.show.wrong{ border-color:#B4432E; color:#B4432E; }
+  @keyframes babyStampIn{ 0%{ transform:rotate(-3deg) scale(1.8); opacity:0; } 100%{ transform:rotate(-3deg) scale(1); opacity:1; } }
 
   .music-fab{
     position:fixed;
@@ -858,10 +887,12 @@ SPECIAL THANKS
   <img id="lightboxImg" src="" alt="확대 사진">
   <p id="lightboxCounter"></p>
   <div id="babyQuizSheet" class="baby-quiz-sheet" onclick="event.stopPropagation()">
+    <img id="babyStickerLeft" class="baby-sticker left" alt="">
+    <img id="babyStickerRight" class="baby-sticker right" alt="">
     <p class="baby-quiz-question">누구일까요?</p>
     <div class="baby-quiz-choices" id="babyQuizChoices">
-      <button class="baby-quiz-choice" type="button" onclick="answerBabyQuiz('하늘')">하늘이</button>
-      <button class="baby-quiz-choice" type="button" onclick="answerBabyQuiz('바다')">바다</button>
+      <button class="baby-quiz-choice" type="button" onclick="answerBabyQuiz('하늘')"><span class="baby-quiz-dot sky"></span>하늘이</button>
+      <button class="baby-quiz-choice" type="button" onclick="answerBabyQuiz('바다')"><span class="baby-quiz-dot sea"></span>바다</button>
     </div>
     <p class="baby-quiz-result" id="babyQuizResult"></p>
   </div>
@@ -1369,8 +1400,8 @@ function answerBabyQuiz(choice){
   const correct = babyGalleryAnswers[babyQuizIndex];
   const resultEl = document.getElementById('babyQuizResult');
   const isCorrect = !!correct && choice === correct;
-  resultEl.textContent = isCorrect ? 'O 맞았습니다!' : 'X 틀렸습니다!';
-  resultEl.className = 'baby-quiz-result ' + (isCorrect ? 'correct' : 'wrong');
+  resultEl.textContent = isCorrect ? '정답!' : '땡!';
+  resultEl.className = 'baby-quiz-result show' + (isCorrect ? '' : ' wrong');
   document.getElementById('babyQuizChoices').style.display = 'none';
 }
 
@@ -1772,6 +1803,18 @@ async function loadFromSheet(){
     }
     if(data.click1) babyFaceUrls[1].click = driveDirectUrl(data.click1);
     if(data.click2) babyFaceUrls[2].click = driveDirectUrl(data.click2);
+
+    // 화동 퀴즈 팝업 모서리에 붙는 하늘이/바다 스티커 사진(누끼컷).
+    if(data.babysticker1){
+      const el = document.getElementById('babyStickerLeft');
+      el.src = driveDirectUrl(data.babysticker1);
+      el.classList.add('loaded');
+    }
+    if(data.babysticker2){
+      const el = document.getElementById('babyStickerRight');
+      el.src = driveDirectUrl(data.babysticker2);
+      el.classList.add('loaded');
+    }
 
     const flowerGirlMessage = pickField(data, SHEET_KEYS.flowerGirlMessage);
     if(flowerGirlMessage){
