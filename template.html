@@ -1980,7 +1980,7 @@ function copyInviteLink(e){
    처음 발생하는 탭/스크롤을 감지해 그 즉시 재생합니다. 우측 상단 버튼으로도
    언제든 켜고 끌 수 있습니다.
    ========================================================= */
-const BG_MUSIC_START = 30; // 이 지점부터 재생 (반복/최초 재생 시 항상 여기서 시작)
+const BG_MUSIC_START = 29; // 이 지점부터 재생 (반복/최초 재생 시 항상 여기서 시작)
 const BG_MUSIC_FADE_MS = 5000; // 재생 시작 후 이 시간(ms) 동안 볼륨 0 -> BG_MUSIC_VOLUME 서서히 커짐(페이드인, 4제곱 곡선 사용 - 초반에 더 오래 조용함)
 const BG_MUSIC_VOLUME = 0.21; // 페이드인이 끝난 뒤 유지되는 최종 볼륨(0~1)
 const bgAudio = document.getElementById('bgAudio');
@@ -2069,6 +2069,13 @@ function toggleMusic(){
   hideSoundToast();
   if(musicPlaying){ bgAudio.pause(); } else { playMusic(); }
 }
+
+// 전원 버튼 등으로 화면이 꺼지거나 다른 앱으로 전환되면(탭이 백그라운드로 가면)
+// 음악도 같이 멈춥니다. 다시 화면을 켜도 자동으로 이어서 재생하진 않고,
+// 음악 버튼으로 다시 켤 수 있게 둡니다.
+document.addEventListener('visibilitychange', function(){
+  if(document.hidden && musicPlaying) bgAudio.pause();
+});
 
 // 브라우저가 소리 있는 자동재생을 막은 경우, 화면에서 처음 일어나는
 // 탭/스크롤에 맞춰 바로 재생을 시도합니다(사용자 동작 없이는 재생이
