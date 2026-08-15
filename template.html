@@ -340,27 +340,29 @@
 
   .guestbook-scroll{
     display:flex;
-    gap:12px;
     overflow-x:auto;
     scroll-snap-type:x mandatory;
     margin-top:22px;
-    padding:2px 4px 10px;
     -webkit-overflow-scrolling:touch;
   }
   .guestbook-scroll::-webkit-scrollbar{ height:4px; }
-  .guestbook-item{
-    flex:0 0 auto;
+  .guestbook-page{
+    flex:0 0 100%;
     scroll-snap-align:start;
-    width:200px;
-    max-height:160px;
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+  }
+  .guestbook-item{
+    max-height:76px;
     overflow-y:auto;
     border:1px solid var(--gold-soft);
     border-radius:6px;
-    padding:12px 14px;
+    padding:8px 12px;
     text-align:left;
   }
-  .guestbook-name{ font-size:13px; font-weight:700; color:var(--gold); margin:0 0 4px; }
-  .guestbook-message{ font-size:14px; color:var(--green); margin:0; white-space:pre-line; line-height:1.6; }
+  .guestbook-name{ font-size:13px; font-weight:700; color:var(--gold); margin:0 0 3px; }
+  .guestbook-message{ font-size:14px; color:var(--green); margin:0; white-space:pre-line; line-height:1.5; }
   .guestbook-empty{ font-size:13px; color:var(--green-soft); text-align:center; margin-top:18px; width:100%; }
   .guestbook-hint{ color:var(--green-soft); font-size:14px; margin:4px 0 0; text-align:center; }
 
@@ -1535,10 +1537,17 @@ async function loadGuestbook(){
       hintEl.style.display = 'none';
       return;
     }
-    listEl.innerHTML = entries.slice().reverse().map(function(entry){
-      return '<div class="guestbook-item"><p class="guestbook-name">' + escapeHtml(entry.name || '익명') + '</p><p class="guestbook-message">' + escapeHtml(entry.message || '') + '</p></div>';
-    }).join('');
-    hintEl.style.display = entries.length > 5 ? 'block' : 'none';
+    const ordered = entries.slice().reverse();
+    const PAGE_SIZE = 5;
+    let pagesHtml = '';
+    for(let i = 0; i < ordered.length; i += PAGE_SIZE){
+      const pageEntries = ordered.slice(i, i + PAGE_SIZE);
+      pagesHtml += '<div class="guestbook-page">' + pageEntries.map(function(entry){
+        return '<div class="guestbook-item"><p class="guestbook-name">' + escapeHtml(entry.name || '익명') + '</p><p class="guestbook-message">' + escapeHtml(entry.message || '') + '</p></div>';
+      }).join('') + '</div>';
+    }
+    listEl.innerHTML = pagesHtml;
+    hintEl.style.display = ordered.length > PAGE_SIZE ? 'block' : 'none';
   }catch(e){
     // 방명록을 못 불러와도 나머지 페이지에는 영향 없게 조용히 무시합니다.
   }
