@@ -338,11 +338,31 @@
   .rsvp-msg.success{ color:var(--green); }
   .rsvp-msg.error{ color:#B4432E; }
 
-  .guestbook-list{ text-align:left; margin-top:22px; display:flex; flex-direction:column; gap:10px; }
-  .guestbook-item{ border:1px solid var(--gold-soft); border-radius:6px; padding:12px 14px; }
+  .guestbook-scroll{
+    display:flex;
+    gap:12px;
+    overflow-x:auto;
+    scroll-snap-type:x mandatory;
+    margin-top:22px;
+    padding:2px 4px 10px;
+    -webkit-overflow-scrolling:touch;
+  }
+  .guestbook-scroll::-webkit-scrollbar{ height:4px; }
+  .guestbook-item{
+    flex:0 0 auto;
+    scroll-snap-align:start;
+    width:200px;
+    max-height:160px;
+    overflow-y:auto;
+    border:1px solid var(--gold-soft);
+    border-radius:6px;
+    padding:12px 14px;
+    text-align:left;
+  }
   .guestbook-name{ font-size:13px; font-weight:700; color:var(--gold); margin:0 0 4px; }
   .guestbook-message{ font-size:14px; color:var(--green); margin:0; white-space:pre-line; line-height:1.6; }
-  .guestbook-empty{ font-size:13px; color:var(--green-soft); text-align:center; margin-top:18px; }
+  .guestbook-empty{ font-size:13px; color:var(--green-soft); text-align:center; margin-top:18px; width:100%; }
+  .guestbook-hint{ color:var(--green-soft); font-size:14px; margin:4px 0 0; text-align:center; }
 
   .film-section{ padding:44px 0; text-align:center; }
   .film-strip{
@@ -411,7 +431,7 @@
     justify-content:center;
   }
   #lightbox.show{ display:flex; }
-  #lightbox img{ width:100%; height:100%; object-fit:contain; display:block; }
+  #lightbox img{ width:100%; height:100%; object-fit:contain; display:block; touch-action:none; }
   #lightboxClose{
     position:absolute;
     top:20px;
@@ -765,7 +785,8 @@
       <button class="rsvp-submit" id="gbSubmitBtn" type="button" onclick="submitGuestbook()">남기기</button>
       <p class="rsvp-msg" id="gbMsg"></p>
     </div>
-    <div class="guestbook-list fadeup" id="guestbookList"></div>
+    <div class="guestbook-scroll fadeup" id="guestbookList"></div>
+    <p class="guestbook-hint fadeup" id="guestbookHint" style="display:none;">옆으로 넘겨서 더보기</p>
   </section>
 
   <div class="share-section">
@@ -1062,17 +1083,26 @@ renderWeddingDate(CONFIG.fallbackWedding);
 
 let galleryPhotos = [];
 let lightboxIndex = 0;
+let lightboxHistoryPushed = false; // 뒤로가기를 눌렀을 때 청첩장이 통째로 꺼지지 않고 라이트박스만 닫히게 하기 위한 표시
 
 function showLightboxPhoto(index){
   lightboxIndex = ((index % galleryPhotos.length) + galleryPhotos.length) % galleryPhotos.length;
   document.getElementById('lightboxImg').src = galleryPhotos[lightboxIndex];
   document.getElementById('lightboxCounter').textContent = (lightboxIndex + 1) + ' / ' + galleryPhotos.length;
+  resetLightboxZoom();
 }
 
 function openLightbox(index, photos){
   if(photos) galleryPhotos = photos; // 다른 갤러리(화동 갤러리 등)에서 열 때는 그 목록으로 바꿔서 이전/다음이 그 안에서만 움직이게 함
   showLightboxPhoto(index);
   document.getElementById('lightbox').classList.add('show');
+  // 모바일에서 사진을 보다가 기기 뒤로가기를 누르면 브라우저 히스토리가 없어서
+  // 청첩장 페이지 자체가 꺼져버립니다. 히스토리를 하나 쌓아두면 뒤로가기가
+  // 그 기록을 소비하면서 popstate 이벤트만 발생시키고, 페이지는 그대로 남습니다.
+  if(!lightboxHistoryPushed){
+    lightboxHistoryPushed = true;
+    history.pushState({ lightboxOpen: true }, '', location.href);
+  }
 }
 
 function stepLightbox(e, dir){
@@ -1083,7 +1113,115 @@ function stepLightbox(e, dir){
 function closeLightbox(e){
   if(e) e.stopPropagation();
   document.getElementById('lightbox').classList.remove('show');
+  resetLightboxZoom();
+  if(lightboxHistoryPushed){
+    lightboxHistoryPushed = false;
+    history.back(); // openLightbox에서 쌓아둔 히스토리를 정리해서 다음에 뒤로가기 한 번으로 항상 닫히게 함
+  }
 }
+
+window.addEventListener('popstate', function(){
+  const lightbox = document.getElementById('lightbox');
+  if(lightbox.classList.contains('show')){
+    lightboxHistoryPushed = false; // 뒤로가기 자체가 이미 히스토리를 소비했으므로 다시 back()을 부르지 않음
+    lightbox.classList.remove('show');
+    resetLightboxZoom();
+  }
+});
+
+// 사진 확대: 두 손가락 핀치, 더블탭으로 확대/축소하고 확대된 상태에서는 한 손가락으로 이동합니다.
+let lbScale = 1, lbTX = 0, lbTY = 0;
+let lbPinchStartDist = 0, lbPinchStartScale = 1;
+let lbPanStartX = 0, lbPanStartY = 0, lbPanStartTX = 0, lbPanStartTY = 0;
+let lbIsPanning = false;
+let lbLastTapTime = 0;
+
+function applyLightboxTransform(){
+  document.getElementById('lightboxImg').style.transform = 'translate(' + lbTX + 'px,' + lbTY + 'px) scale(' + lbScale + ')';
+}
+
+function resetLightboxZoom(){
+  lbScale = 1; lbTX = 0; lbTY = 0;
+  const img = document.getElementById('lightboxImg');
+  img.style.transition = 'transform 0.2s ease';
+  applyLightboxTransform();
+}
+
+function clampLightboxPan(){
+  const maxOffset = Math.max(0, (lbScale - 1) * 160); // 화면 밖으로 너무 멀리 안 나가게 대략적으로 제한
+  lbTX = Math.max(-maxOffset, Math.min(maxOffset, lbTX));
+  lbTY = Math.max(-maxOffset, Math.min(maxOffset, lbTY));
+}
+
+function lightboxTouchDist(touches){
+  const dx = touches[0].clientX - touches[1].clientX;
+  const dy = touches[0].clientY - touches[1].clientY;
+  return Math.sqrt(dx * dx + dy * dy);
+}
+
+function toggleLightboxZoom(){
+  lbScale = lbScale > 1 ? 1 : 2.5;
+  lbTX = 0; lbTY = 0;
+  const img = document.getElementById('lightboxImg');
+  img.style.transition = 'transform 0.2s ease';
+  applyLightboxTransform();
+}
+
+function initLightboxZoom(){
+  const img = document.getElementById('lightboxImg');
+
+  img.addEventListener('click', function(e){ e.stopPropagation(); }); // 사진을 탭해도 라이트박스가 닫히지 않게 함
+
+  img.addEventListener('touchstart', function(e){
+    if(e.touches.length === 2){
+      lbPinchStartDist = lightboxTouchDist(e.touches);
+      lbPinchStartScale = lbScale;
+      img.style.transition = 'none';
+    } else if(e.touches.length === 1){
+      const now = Date.now();
+      if(now - lbLastTapTime < 300){
+        toggleLightboxZoom();
+        lbLastTapTime = 0;
+        return;
+      }
+      lbLastTapTime = now;
+      if(lbScale > 1){
+        lbIsPanning = true;
+        lbPanStartX = e.touches[0].clientX;
+        lbPanStartY = e.touches[0].clientY;
+        lbPanStartTX = lbTX;
+        lbPanStartTY = lbTY;
+        img.style.transition = 'none';
+      }
+    }
+  }, { passive:true });
+
+  img.addEventListener('touchmove', function(e){
+    if(e.touches.length === 2){
+      const dist = lightboxTouchDist(e.touches);
+      lbScale = Math.max(1, Math.min(4, lbPinchStartScale * (dist / lbPinchStartDist)));
+      clampLightboxPan();
+      applyLightboxTransform();
+      e.preventDefault();
+    } else if(e.touches.length === 1 && lbIsPanning){
+      lbTX = lbPanStartTX + (e.touches[0].clientX - lbPanStartX);
+      lbTY = lbPanStartTY + (e.touches[0].clientY - lbPanStartY);
+      clampLightboxPan();
+      applyLightboxTransform();
+      e.preventDefault();
+    }
+  }, { passive:false });
+
+  img.addEventListener('touchend', function(e){
+    if(e.touches.length === 0){
+      lbIsPanning = false;
+      if(lbScale < 1.05){ resetLightboxZoom(); }
+    }
+  });
+
+  img.addEventListener('dblclick', toggleLightboxZoom); // 데스크톱에서도 더블클릭으로 확대/축소
+}
+initLightboxZoom();
 
 function renderGallery(photos){
   galleryPhotos = photos;
@@ -1388,16 +1526,19 @@ async function submitGuestbook(){
 async function loadGuestbook(){
   if(!CONFIG.rsvpApiUrl) return;
   const listEl = document.getElementById('guestbookList');
+  const hintEl = document.getElementById('guestbookHint');
   try{
     const res = await fetch(CONFIG.rsvpApiUrl + '?_=' + Date.now(), { cache: 'no-store' });
     const entries = await res.json();
     if(!Array.isArray(entries) || entries.length === 0){
       listEl.innerHTML = '<p class="guestbook-empty">아직 남겨진 메시지가 없습니다.</p>';
+      hintEl.style.display = 'none';
       return;
     }
     listEl.innerHTML = entries.slice().reverse().map(function(entry){
       return '<div class="guestbook-item"><p class="guestbook-name">' + escapeHtml(entry.name || '익명') + '</p><p class="guestbook-message">' + escapeHtml(entry.message || '') + '</p></div>';
     }).join('');
+    hintEl.style.display = entries.length > 5 ? 'block' : 'none';
   }catch(e){
     // 방명록을 못 불러와도 나머지 페이지에는 영향 없게 조용히 무시합니다.
   }
