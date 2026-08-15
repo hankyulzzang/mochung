@@ -1339,6 +1339,9 @@ let babyQuizIndex = 0;
 function openBabyQuiz(index){
   babyQuizIndex = index;
   openLightbox(index, babyGalleryPhotos); // 사진을 확대해서 보여주고, 그 위에 퀴즈 시트를 띄움
+  // 아이 둘 다 나오는 사진처럼 구글시트에 정답(babyanswerN)을 안 넣어둔 경우엔
+  // 퀴즈 없이 사진 확대만 보여줍니다.
+  if(!babyGalleryAnswers[index]) return;
   document.getElementById('babyQuizResult').textContent = '';
   document.getElementById('babyQuizResult').className = 'baby-quiz-result';
   document.getElementById('babyQuizChoices').style.display = 'flex';
