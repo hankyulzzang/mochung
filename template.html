@@ -1433,7 +1433,7 @@ function renderBabyFilm(photos, answers){
     const img = document.createElement('img');
     img.src = src;
     img.loading = 'lazy';
-    img.onclick = function(){ openBabyQuiz(i % photos.length); };
+    img.onclick = function(){ openBabyQuizIntro(i % photos.length); };
     frame.appendChild(img);
     if(i % 2 === 0){
       // 실제 필름에 인화 날짜가 찍혀있는 것처럼, 적당한 간격(두 프레임마다)으로 넣습니다.
@@ -1494,14 +1494,17 @@ function answerBabyQuiz(choice){
   }
 }
 
-// ---- 이름 적고 참여 여부 고른 뒤, 정답이 있는 사진들을 순서대로 풀어보는 채점 퀴즈 ----
+// ---- 이름 적고 참여 여부 고른 뒤, 정답이 있는 사진들을 1번부터 순서대로 풀어보는 채점 퀴즈 ----
+// 필름 갤러리의 아무 사진이나 눌러도 (그리고 안내 문구를 눌러도) 항상 이 참여 여부 팝업이 먼저 뜹니다.
 let babyQuizSequentialMode = false;
 let babyQuizSeqPos = 0;
 let babyQuizScore = 0;
 let babyQuizParticipantName = '';
 let babyQuizJoinChoice = null;
+let babyQuizPendingIndex = null; // "아니오(구경만)"를 골랐을 때 원래 누르려던 사진을 그대로 보여주기 위한 기억값
 
-function openBabyQuizIntro(){
+function openBabyQuizIntro(pendingIndex){
+  babyQuizPendingIndex = (typeof pendingIndex === 'number') ? pendingIndex : null;
   document.getElementById('babyQuizName').value = '';
   babyQuizJoinChoice = null;
   document.querySelectorAll('#babyQuizJoinRow .rsvp-radio-btn').forEach(function(btn){ btn.classList.remove('selected'); });
@@ -1536,12 +1539,16 @@ function submitBabyQuizIntro(){
     return;
   }
   closeBabyQuizIntro();
-  if(babyQuizJoinChoice === '아니오') return; // 구경만 하기로 했으면 그냥 닫고 자유롭게 사진만 봄
+  if(babyQuizJoinChoice === '아니오'){
+    // 구경만 하기로 했으면 채점 없이, 원래 누르려던 그 사진을 그대로 보여줍니다.
+    if(babyQuizPendingIndex !== null) openBabyQuiz(babyQuizPendingIndex);
+    return;
+  }
   if(babyQuizSequence.length === 0) return; // 채점 가능한(정답이 있는) 사진이 없으면 조용히 무시
 
   babyQuizParticipantName = name;
   babyQuizScore = 0;
-  babyQuizSeqPos = 0;
+  babyQuizSeqPos = 0; // 어떤 사진을 눌렀든 채점 퀴즈는 항상 1번 문제부터 시작
   babyQuizSequentialMode = true;
   document.getElementById('lightbox').classList.add('sequential'); // 순서대로 풀도록 이전/다음 버튼은 숨김
   openBabyQuiz(babyQuizSequence[0]);
