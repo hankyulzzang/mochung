@@ -481,25 +481,18 @@
     letter-spacing:1px;
   }
 
-  #babyQuiz{
-    position:fixed;
-    inset:0;
-    z-index:1001;
-    background:rgba(0,0,0,0.4);
-    display:none;
-    align-items:flex-end;
-    justify-content:center;
-  }
-  #babyQuiz.show{ display:flex; }
   .baby-quiz-sheet{
-    width:100%;
-    max-width:480px;
+    display:none;
+    position:absolute;
+    left:0; right:0; bottom:0;
+    z-index:3;
     background:#FFFFFF;
     border-radius:20px 20px 0 0;
-    padding:28px 24px 32px;
+    padding:22px 24px 28px;
     text-align:center;
-    box-shadow:0 -4px 20px rgba(0,0,0,0.15);
+    box-shadow:0 -4px 20px rgba(0,0,0,0.25);
   }
+  .baby-quiz-sheet.show{ display:block; }
   .baby-quiz-question{ font-size:18px; font-weight:700; color:var(--green); margin:0 0 18px; }
   .baby-quiz-choices{ display:flex; gap:12px; }
   .baby-quiz-choice{
@@ -862,10 +855,7 @@ SPECIAL THANKS
   <button id="lightboxNext" class="lightbox-nav" onclick="stepLightbox(event,1)">&rsaquo;</button>
   <img id="lightboxImg" src="" alt="확대 사진">
   <p id="lightboxCounter"></p>
-</div>
-
-<div id="babyQuiz" onclick="closeBabyQuiz(event)">
-  <div class="baby-quiz-sheet" onclick="event.stopPropagation()">
+  <div id="babyQuizSheet" class="baby-quiz-sheet" onclick="event.stopPropagation()">
     <p class="baby-quiz-question">누구일까요?</p>
     <div class="baby-quiz-choices" id="babyQuizChoices">
       <button class="baby-quiz-choice" type="button" onclick="answerBabyQuiz('하늘')">하늘이</button>
@@ -1161,6 +1151,7 @@ function stepLightbox(e, dir){
 function closeLightbox(e){
   if(e) e.stopPropagation();
   document.getElementById('lightbox').classList.remove('show');
+  document.getElementById('babyQuizSheet').classList.remove('show');
   resetLightboxZoom();
   if(lightboxHistoryPushed){
     lightboxHistoryPushed = false;
@@ -1173,6 +1164,7 @@ window.addEventListener('popstate', function(){
   if(lightbox.classList.contains('show')){
     lightboxHistoryPushed = false; // 뒤로가기 자체가 이미 히스토리를 소비했으므로 다시 back()을 부르지 않음
     lightbox.classList.remove('show');
+    document.getElementById('babyQuizSheet').classList.remove('show');
     resetLightboxZoom();
   }
 });
@@ -1346,15 +1338,11 @@ let babyQuizIndex = 0;
 
 function openBabyQuiz(index){
   babyQuizIndex = index;
+  openLightbox(index, babyGalleryPhotos); // 사진을 확대해서 보여주고, 그 위에 퀴즈 시트를 띄움
   document.getElementById('babyQuizResult').textContent = '';
   document.getElementById('babyQuizResult').className = 'baby-quiz-result';
   document.getElementById('babyQuizChoices').style.display = 'flex';
-  document.getElementById('babyQuiz').classList.add('show');
-}
-
-function closeBabyQuiz(e){
-  if(e) e.stopPropagation();
-  document.getElementById('babyQuiz').classList.remove('show');
+  document.getElementById('babyQuizSheet').classList.add('show');
 }
 
 function answerBabyQuiz(choice){
