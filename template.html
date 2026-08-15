@@ -684,13 +684,6 @@
           <label class="rsvp-label">참석 인원(본인 포함)</label>
           <input class="rsvp-input" type="number" id="rsvpCount" min="1" value="1">
         </div>
-        <div class="rsvp-field">
-          <label class="rsvp-label">식사 여부</label>
-          <div class="rsvp-radio-row" id="rsvpMealRow">
-            <div class="rsvp-radio-btn" data-value="예" onclick="selectRsvpMeal('예')">예</div>
-            <div class="rsvp-radio-btn" data-value="아니오" onclick="selectRsvpMeal('아니오')">아니오</div>
-          </div>
-        </div>
       </div>
       <button class="rsvp-submit" id="rsvpSubmitBtn" type="button" onclick="submitRsvp()">보내기</button>
       <p class="rsvp-msg" id="rsvpMsg"></p>
@@ -1400,7 +1393,6 @@ function copyAccount(e, id){
 }
 
 let rsvpAttend = null;
-let rsvpMeal = null;
 let rsvpSide = null;
 
 function selectRsvpSide(value){
@@ -1416,13 +1408,6 @@ function selectRsvpAttend(value){
     btn.classList.toggle('selected', btn.dataset.value === value);
   });
   document.getElementById('rsvpAttendDetails').style.display = (value === '참석') ? 'block' : 'none';
-}
-
-function selectRsvpMeal(value){
-  rsvpMeal = value;
-  document.querySelectorAll('#rsvpMealRow .rsvp-radio-btn').forEach(function(btn){
-    btn.classList.toggle('selected', btn.dataset.value === value);
-  });
 }
 
 function escapeHtml(s){
@@ -1457,12 +1442,6 @@ async function submitRsvp(){
     msgEl.className = 'rsvp-msg error';
     return;
   }
-  if(rsvpAttend === '참석' && !rsvpMeal){
-    msgEl.textContent = '식사 여부를 선택해주세요.';
-    msgEl.className = 'rsvp-msg error';
-    return;
-  }
-
   const btn = document.getElementById('rsvpSubmitBtn');
   btn.disabled = true;
   msgEl.textContent = '';
@@ -1482,8 +1461,7 @@ async function submitRsvp(){
         name: name,
         side: rsvpSide,
         attend: rsvpAttend,
-        count: rsvpAttend === '참석' ? count : '',
-        meal: rsvpAttend === '참석' ? rsvpMeal : ''
+        count: rsvpAttend === '참석' ? count : ''
       })
     });
     msgEl.textContent = '회신이 접수되었습니다. 감사합니다.';
