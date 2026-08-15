@@ -481,6 +481,43 @@
     letter-spacing:1px;
   }
 
+  #babyQuiz{
+    position:fixed;
+    inset:0;
+    z-index:1001;
+    background:rgba(0,0,0,0.4);
+    display:none;
+    align-items:flex-end;
+    justify-content:center;
+  }
+  #babyQuiz.show{ display:flex; }
+  .baby-quiz-sheet{
+    width:100%;
+    max-width:480px;
+    background:#FFFFFF;
+    border-radius:20px 20px 0 0;
+    padding:28px 24px 32px;
+    text-align:center;
+    box-shadow:0 -4px 20px rgba(0,0,0,0.15);
+  }
+  .baby-quiz-question{ font-size:18px; font-weight:700; color:var(--green); margin:0 0 18px; }
+  .baby-quiz-choices{ display:flex; gap:12px; }
+  .baby-quiz-choice{
+    flex:1;
+    padding:14px;
+    border:1px solid var(--gold-soft);
+    border-radius:8px;
+    background:#FFFFFF;
+    color:var(--green);
+    font-family:'Gowun Dodum', sans-serif;
+    font-size:16px;
+    cursor:pointer;
+  }
+  .baby-quiz-choice:active{ background:var(--gold-soft); }
+  .baby-quiz-result{ font-size:20px; font-weight:700; margin:8px 0 0; min-height:28px; }
+  .baby-quiz-result.correct{ color:#2E7D4F; }
+  .baby-quiz-result.wrong{ color:#B4432E; }
+
   .music-fab{
     position:fixed;
     z-index:40;
@@ -825,6 +862,17 @@ SPECIAL THANKS
   <button id="lightboxNext" class="lightbox-nav" onclick="stepLightbox(event,1)">&rsaquo;</button>
   <img id="lightboxImg" src="" alt="확대 사진">
   <p id="lightboxCounter"></p>
+</div>
+
+<div id="babyQuiz" onclick="closeBabyQuiz(event)">
+  <div class="baby-quiz-sheet" onclick="event.stopPropagation()">
+    <p class="baby-quiz-question">누구일까요?</p>
+    <div class="baby-quiz-choices" id="babyQuizChoices">
+      <button class="baby-quiz-choice" type="button" onclick="answerBabyQuiz('하늘')">하늘이</button>
+      <button class="baby-quiz-choice" type="button" onclick="answerBabyQuiz('바다')">바다</button>
+    </div>
+    <p class="baby-quiz-result" id="babyQuizResult"></p>
+  </div>
 </div>
 
 <script>
@@ -1265,8 +1313,11 @@ function toggleBabyFace(n){
   }, 2000);
 }
 
-function renderBabyFilm(photos){
+let babyGalleryAnswers = [];
+
+function renderBabyFilm(photos, answers){
   babyGalleryPhotos = photos;
+  babyGalleryAnswers = answers || [];
   const track = document.getElementById('babyFilmTrack');
   track.innerHTML = '';
   const looped = photos.concat(photos); // 이어붙여서 끊김 없이 왼쪽으로 계속 흐르게 함
@@ -1276,7 +1327,7 @@ function renderBabyFilm(photos){
     const img = document.createElement('img');
     img.src = src;
     img.loading = 'lazy';
-    img.onclick = function(){ openLightbox(i % photos.length, babyGalleryPhotos); };
+    img.onclick = function(){ openBabyQuiz(i % photos.length); };
     frame.appendChild(img);
     if(i % 2 === 0){
       // 실제 필름에 인화 날짜가 찍혀있는 것처럼, 적당한 간격(두 프레임마다)으로 넣습니다.
@@ -1287,6 +1338,32 @@ function renderBabyFilm(photos){
     }
     track.appendChild(frame);
   });
+}
+
+// 화동 사진을 누르면 "누구일까요?" 퀴즈가 하단에서 올라오고, 하늘이/바다 중 골라서
+// 맞았는지 틀렸는지 바로 확인할 수 있습니다. 정답은 구글시트의 babyanswer 칸에서 읽어옵니다.
+let babyQuizIndex = 0;
+
+function openBabyQuiz(index){
+  babyQuizIndex = index;
+  document.getElementById('babyQuizResult').textContent = '';
+  document.getElementById('babyQuizResult').className = 'baby-quiz-result';
+  document.getElementById('babyQuizChoices').style.display = 'flex';
+  document.getElementById('babyQuiz').classList.add('show');
+}
+
+function closeBabyQuiz(e){
+  if(e) e.stopPropagation();
+  document.getElementById('babyQuiz').classList.remove('show');
+}
+
+function answerBabyQuiz(choice){
+  const correct = babyGalleryAnswers[babyQuizIndex];
+  const resultEl = document.getElementById('babyQuizResult');
+  const isCorrect = !!correct && choice === correct;
+  resultEl.textContent = isCorrect ? 'O 맞았습니다!' : 'X 틀렸습니다!';
+  resultEl.className = 'baby-quiz-result ' + (isCorrect ? 'correct' : 'wrong');
+  document.getElementById('babyQuizChoices').style.display = 'none';
 }
 
 // 화동 필름 갤러리: 평소엔 왼쪽으로 천천히 자동으로 흐르다가, 사용자가 직접 옆으로
@@ -1705,10 +1782,14 @@ async function loadFromSheet(){
     }
 
     const babyPhotos = [];
+    const babyAnswers = [];
     for(let i=1;i<=30;i++){
-      if(data['babyphoto'+i]) babyPhotos.push(driveDirectUrl(data['babyphoto'+i]));
+      if(data['babyphoto'+i]){
+        babyPhotos.push(driveDirectUrl(data['babyphoto'+i]));
+        babyAnswers.push((data['babyanswer'+i] || '').trim());
+      }
     }
-    if(babyPhotos.length) renderBabyFilm(babyPhotos);
+    if(babyPhotos.length) renderBabyFilm(babyPhotos, babyAnswers);
   }catch(e){
     console.error('구글 시트를 불러오지 못했습니다', e);
     document.getElementById('introSpinner').classList.add('hide');
