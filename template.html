@@ -1122,16 +1122,20 @@ renderWeddingDate(CONFIG.fallbackWedding);
 let galleryPhotos = [];
 let lightboxIndex = 0;
 let lightboxHistoryPushed = false; // 뒤로가기를 눌렀을 때 청첩장이 통째로 꺼지지 않고 라이트박스만 닫히게 하기 위한 표시
+let babyQuizActive = false; // 화동 사진(퀴즈 있는 갤러리)을 보는 중인지 여부 - 이전/다음으로 넘길 때 퀴즈를 새로 맞춰주기 위함
 
 function showLightboxPhoto(index){
   lightboxIndex = ((index % galleryPhotos.length) + galleryPhotos.length) % galleryPhotos.length;
   document.getElementById('lightboxImg').src = galleryPhotos[lightboxIndex];
   document.getElementById('lightboxCounter').textContent = (lightboxIndex + 1) + ' / ' + galleryPhotos.length;
   resetLightboxZoom();
+  if(babyQuizActive) updateBabyQuizForIndex(lightboxIndex); // 다음/이전 사진으로 넘어가면 이전 사진의 정답 표시가 그대로 남지 않도록 새로 맞춤
 }
 
 function openLightbox(index, photos){
   if(photos) galleryPhotos = photos; // 다른 갤러리(화동 갤러리 등)에서 열 때는 그 목록으로 바꿔서 이전/다음이 그 안에서만 움직이게 함
+  babyQuizActive = false;
+  document.getElementById('babyQuizSheet').classList.remove('show');
   showLightboxPhoto(index);
   document.getElementById('lightbox').classList.add('show');
   // 모바일에서 사진을 보다가 기기 뒤로가기를 누르면 브라우저 히스토리가 없어서
@@ -1152,6 +1156,7 @@ function closeLightbox(e){
   if(e) e.stopPropagation();
   document.getElementById('lightbox').classList.remove('show');
   document.getElementById('babyQuizSheet').classList.remove('show');
+  babyQuizActive = false;
   resetLightboxZoom();
   if(lightboxHistoryPushed){
     lightboxHistoryPushed = false;
@@ -1165,6 +1170,7 @@ window.addEventListener('popstate', function(){
     lightboxHistoryPushed = false; // 뒤로가기 자체가 이미 히스토리를 소비했으므로 다시 back()을 부르지 않음
     lightbox.classList.remove('show');
     document.getElementById('babyQuizSheet').classList.remove('show');
+    babyQuizActive = false;
     resetLightboxZoom();
   }
 });
@@ -1337,15 +1343,24 @@ function renderBabyFilm(photos, answers){
 let babyQuizIndex = 0;
 
 function openBabyQuiz(index){
-  babyQuizIndex = index;
   openLightbox(index, babyGalleryPhotos); // 사진을 확대해서 보여주고, 그 위에 퀴즈 시트를 띄움
-  // 아이 둘 다 나오는 사진처럼 구글시트에 정답(babyanswerN)을 안 넣어둔 경우엔
-  // 퀴즈 없이 사진 확대만 보여줍니다.
-  if(!babyGalleryAnswers[index]) return;
+  babyQuizActive = true;
+  updateBabyQuizForIndex(index);
+}
+
+// 화동 갤러리를 보는 중 이전/다음으로 사진이 바뀔 때마다 그 사진에 맞춰 퀴즈를 새로 맞춥니다.
+// 아이 둘 다 나오는 사진처럼 구글시트에 정답(babyanswerN)을 안 넣어둔 경우엔 퀴즈 없이 사진만 보여줍니다.
+function updateBabyQuizForIndex(index){
+  babyQuizIndex = index;
+  const sheet = document.getElementById('babyQuizSheet');
+  if(!babyGalleryAnswers[index]){
+    sheet.classList.remove('show');
+    return;
+  }
   document.getElementById('babyQuizResult').textContent = '';
   document.getElementById('babyQuizResult').className = 'baby-quiz-result';
   document.getElementById('babyQuizChoices').style.display = 'flex';
-  document.getElementById('babyQuizSheet').classList.add('show');
+  sheet.classList.add('show');
 }
 
 function answerBabyQuiz(choice){
