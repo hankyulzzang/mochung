@@ -18,6 +18,13 @@ function doPost(e) {
       e.parameter.attend || '',
       e.parameter.count || ''
     ]);
+
+    // 신랑측/신부측 참석 인원 합계를 G/H열에 항상 채워둡니다(수식이라 응답이
+    // 쌓일 때마다 자동으로 다시 계산됩니다).
+    sheet.getRange('G1').setValue('신랑측 참석인원');
+    sheet.getRange('H1').setFormula('=SUMIFS(E:E, C:C, "신랑측", D:D, "참석")');
+    sheet.getRange('G2').setValue('신부측 참석인원');
+    sheet.getRange('H2').setFormula('=SUMIFS(E:E, C:C, "신부측", D:D, "참석")');
   } else if (type === 'guestbook') {
     let sheet = ss.getSheetByName('방명록');
     if (!sheet) {
