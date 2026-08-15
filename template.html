@@ -332,6 +332,8 @@
   .rsvp-radio-row{ display:flex; gap:10px; }
   .rsvp-radio-btn{ flex:1; padding:11px; border:1px solid var(--gold-soft); border-radius:6px; text-align:center; font-size:14px; cursor:pointer; }
   .rsvp-radio-btn.selected{ background:var(--gold); color:#FFFFFF; border-color:var(--gold); }
+  .rsvp-radio-btn.rsvp-side-groom.selected{ background:#BEE3F8; color:var(--green); border-color:#BEE3F8; }
+  .rsvp-radio-btn.rsvp-side-bride.selected{ background:#F9D2E1; color:var(--green); border-color:#F9D2E1; }
   .rsvp-submit{ width:100%; padding:13px; background:var(--green); color:#FFFFFF; border:none; border-radius:6px; font-size:15px; font-weight:700; font-family:'Gowun Dodum', sans-serif; cursor:pointer; margin-top:4px; }
   .rsvp-submit:disabled{ opacity:0.5; cursor:not-allowed; }
   .rsvp-msg{ font-size:13px; text-align:center; margin:10px 0 0; min-height:16px; }
@@ -664,6 +666,13 @@
         <input class="rsvp-input" type="text" id="rsvpName" placeholder="성함을 입력해주세요">
       </div>
       <div class="rsvp-field">
+        <label class="rsvp-label">신랑측 / 신부측</label>
+        <div class="rsvp-radio-row" id="rsvpSideRow">
+          <div class="rsvp-radio-btn rsvp-side-groom" data-value="신랑측" onclick="selectRsvpSide('신랑측')">신랑측</div>
+          <div class="rsvp-radio-btn rsvp-side-bride" data-value="신부측" onclick="selectRsvpSide('신부측')">신부측</div>
+        </div>
+      </div>
+      <div class="rsvp-field">
         <label class="rsvp-label">참석 여부</label>
         <div class="rsvp-radio-row" id="rsvpAttendRow">
           <div class="rsvp-radio-btn" data-value="참석" onclick="selectRsvpAttend('참석')">참석</div>
@@ -682,10 +691,6 @@
             <div class="rsvp-radio-btn" data-value="아니오" onclick="selectRsvpMeal('아니오')">아니오</div>
           </div>
         </div>
-      </div>
-      <div class="rsvp-field">
-        <label class="rsvp-label">연락처 (선택)</label>
-        <input class="rsvp-input" type="tel" id="rsvpPhone" placeholder="010-0000-0000">
       </div>
       <button class="rsvp-submit" id="rsvpSubmitBtn" type="button" onclick="submitRsvp()">보내기</button>
       <p class="rsvp-msg" id="rsvpMsg"></p>
@@ -1396,6 +1401,14 @@ function copyAccount(e, id){
 
 let rsvpAttend = null;
 let rsvpMeal = null;
+let rsvpSide = null;
+
+function selectRsvpSide(value){
+  rsvpSide = value;
+  document.querySelectorAll('#rsvpSideRow .rsvp-radio-btn').forEach(function(btn){
+    btn.classList.toggle('selected', btn.dataset.value === value);
+  });
+}
 
 function selectRsvpAttend(value){
   rsvpAttend = value;
@@ -1434,6 +1447,11 @@ async function submitRsvp(){
     msgEl.className = 'rsvp-msg error';
     return;
   }
+  if(!rsvpSide){
+    msgEl.textContent = '신랑측/신부측을 선택해주세요.';
+    msgEl.className = 'rsvp-msg error';
+    return;
+  }
   if(!rsvpAttend){
     msgEl.textContent = '참석 여부를 선택해주세요.';
     msgEl.className = 'rsvp-msg error';
@@ -1451,7 +1469,6 @@ async function submitRsvp(){
   msgEl.className = 'rsvp-msg';
 
   const count = document.getElementById('rsvpCount').value || '1';
-  const phone = document.getElementById('rsvpPhone').value.trim();
 
   try{
     // Apps Script 웹앱은 fetch POST 요청에 대해 CORS 응답 헤더를 제대로 안 붙여줘서
@@ -1463,10 +1480,10 @@ async function submitRsvp(){
       body: new URLSearchParams({
         type: 'rsvp',
         name: name,
+        side: rsvpSide,
         attend: rsvpAttend,
         count: rsvpAttend === '참석' ? count : '',
-        meal: rsvpAttend === '참석' ? rsvpMeal : '',
-        phone: phone
+        meal: rsvpAttend === '참석' ? rsvpMeal : ''
       })
     });
     msgEl.textContent = '회신이 접수되었습니다. 감사합니다.';

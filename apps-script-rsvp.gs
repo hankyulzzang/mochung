@@ -9,15 +9,15 @@ function doPost(e) {
     let sheet = ss.getSheetByName('RSVP응답');
     if (!sheet) {
       sheet = ss.insertSheet('RSVP응답');
-      sheet.appendRow(['시각', '이름', '참석여부', '인원', '식사여부', '연락처']);
+      sheet.appendRow(['시각', '이름', '참석측', '참석여부', '인원', '식사여부']);
     }
     sheet.appendRow([
       new Date(),
       e.parameter.name || '',
+      e.parameter.side || '',
       e.parameter.attend || '',
       e.parameter.count || '',
-      e.parameter.meal || '',
-      e.parameter.phone || ''
+      e.parameter.meal || ''
     ]);
   } else if (type === 'guestbook') {
     let sheet = ss.getSheetByName('방명록');
