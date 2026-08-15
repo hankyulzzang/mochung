@@ -395,6 +395,7 @@
     background:#EEF4F7;
   }
   .film-hint{ color:var(--green-soft); font-size:14px; margin:14px 0 0; }
+  .baby-quiz-cta{ color:var(--gold); font-weight:700; text-decoration:underline; cursor:pointer; }
 
   .share-section{
     position:relative;
@@ -479,6 +480,7 @@
     color:var(--green-soft);
     font-size:14px;
     letter-spacing:1px;
+    pointer-events:none; /* 화면 상단 전체 너비를 차지해 닫기 버튼 클릭을 가로채지 않도록 함 */
   }
 
   .baby-quiz-sheet{
@@ -541,6 +543,45 @@
   }
   .baby-quiz-result.show.wrong{ border-color:#B4432E; color:#B4432E; }
   @keyframes babyStampIn{ 0%{ transform:rotate(-3deg) scale(1.8); opacity:0; } 100%{ transform:rotate(-3deg) scale(1); opacity:1; } }
+
+  .baby-quiz-next{
+    display:none;
+    margin-top:10px;
+    width:100%;
+    padding:9px;
+    border:none;
+    border-radius:999px;
+    background:var(--green);
+    color:#FFFFFF;
+    font-family:'Gowun Dodum', sans-serif;
+    font-size:14px;
+    font-weight:700;
+    cursor:pointer;
+  }
+  .baby-quiz-final-text{ font-size:15px; font-weight:700; color:var(--green); margin:4px 0 14px; }
+
+  #lightbox.sequential .lightbox-nav{ display:none; }
+
+  .baby-quiz-intro-overlay{
+    position:fixed;
+    inset:0;
+    z-index:1002;
+    background:rgba(0,0,0,0.5);
+    display:none;
+    align-items:center;
+    justify-content:center;
+    padding:24px;
+  }
+  .baby-quiz-intro-overlay.show{ display:flex; }
+  .baby-quiz-intro-card{
+    width:100%;
+    max-width:340px;
+    background:#FFF8EA;
+    border-radius:16px;
+    padding:26px 22px 22px;
+    box-shadow:0 12px 32px rgba(0,0,0,0.3);
+  }
+  .baby-quiz-intro-title{ font-size:18px; font-weight:700; color:var(--green); text-align:center; margin:0 0 18px; }
 
   .music-fab{
     position:fixed;
@@ -780,7 +821,7 @@
     <div class="baby-film-wrap fadeup" id="babyFilmWrap">
       <div class="baby-film-track" id="babyFilmTrack"></div>
     </div>
-    <p class="film-hint fadeup">눌러서 더보기</p>
+    <p class="film-hint baby-quiz-cta fadeup" onclick="openBabyQuizIntro()">나는 누구일까요? 퀴즈(상품O)</p>
   </section>
 
   <section>
@@ -889,12 +930,38 @@ SPECIAL THANKS
   <div id="babyQuizSheet" class="baby-quiz-sheet" onclick="event.stopPropagation()">
     <img id="babyStickerLeft" class="baby-sticker left" alt="">
     <img id="babyStickerRight" class="baby-sticker right" alt="">
-    <p class="baby-quiz-question">누구일까요?</p>
-    <div class="baby-quiz-choices" id="babyQuizChoices">
-      <button class="baby-quiz-choice" type="button" onclick="answerBabyQuiz('하늘')"><span class="baby-quiz-dot sky"></span>하늘이</button>
-      <button class="baby-quiz-choice" type="button" onclick="answerBabyQuiz('바다')"><span class="baby-quiz-dot sea"></span>바다</button>
+    <div id="babyQuizBody">
+      <p class="baby-quiz-question">누구일까요?</p>
+      <div class="baby-quiz-choices" id="babyQuizChoices">
+        <button class="baby-quiz-choice" type="button" onclick="answerBabyQuiz('하늘')"><span class="baby-quiz-dot sky"></span>하늘이</button>
+        <button class="baby-quiz-choice" type="button" onclick="answerBabyQuiz('바다')"><span class="baby-quiz-dot sea"></span>바다</button>
+      </div>
+      <p class="baby-quiz-result" id="babyQuizResult"></p>
+      <button class="baby-quiz-next" id="babyQuizNextBtn" type="button" onclick="goToNextBabyQuizQuestion()">다음 문제</button>
     </div>
-    <p class="baby-quiz-result" id="babyQuizResult"></p>
+    <div id="babyQuizFinal" style="display:none;">
+      <p class="baby-quiz-final-text" id="babyQuizFinalText"></p>
+      <button class="baby-quiz-next" type="button" style="display:block;" onclick="closeLightbox()">확인</button>
+    </div>
+  </div>
+</div>
+
+<div id="babyQuizIntro" class="baby-quiz-intro-overlay" onclick="closeBabyQuizIntro(event)">
+  <div class="baby-quiz-intro-card" onclick="event.stopPropagation()">
+    <p class="baby-quiz-intro-title">나는 누구일까요? 퀴즈</p>
+    <div class="rsvp-field">
+      <label class="rsvp-label">이름</label>
+      <input class="rsvp-input" type="text" id="babyQuizName" placeholder="성함을 입력해주세요">
+    </div>
+    <div class="rsvp-field">
+      <label class="rsvp-label">퀴즈에 참여하시겠습니까?</label>
+      <div class="rsvp-radio-row" id="babyQuizJoinRow">
+        <div class="rsvp-radio-btn" data-value="예" onclick="selectBabyQuizJoin('예')">예 (상품 O)</div>
+        <div class="rsvp-radio-btn" data-value="아니오" onclick="selectBabyQuizJoin('아니오')">아니오 (구경만 할래요)</div>
+      </div>
+    </div>
+    <button class="rsvp-submit" type="button" onclick="submitBabyQuizIntro()">시작하기</button>
+    <p class="rsvp-msg" id="babyQuizIntroMsg"></p>
   </div>
 </div>
 
@@ -1188,8 +1255,10 @@ function stepLightbox(e, dir){
 function closeLightbox(e){
   if(e) e.stopPropagation();
   document.getElementById('lightbox').classList.remove('show');
+  document.getElementById('lightbox').classList.remove('sequential');
   document.getElementById('babyQuizSheet').classList.remove('show');
   babyQuizActive = false;
+  babyQuizSequentialMode = false; // 중간에 닫으면 채점 퀴즈는 이어가지 않고 결과도 기록하지 않음
   resetLightboxZoom();
   if(lightboxHistoryPushed){
     lightboxHistoryPushed = false;
@@ -1202,8 +1271,10 @@ window.addEventListener('popstate', function(){
   if(lightbox.classList.contains('show')){
     lightboxHistoryPushed = false; // 뒤로가기 자체가 이미 히스토리를 소비했으므로 다시 back()을 부르지 않음
     lightbox.classList.remove('show');
+    lightbox.classList.remove('sequential');
     document.getElementById('babyQuizSheet').classList.remove('show');
     babyQuizActive = false;
+    babyQuizSequentialMode = false;
     resetLightboxZoom();
   }
 });
@@ -1345,10 +1416,14 @@ function toggleBabyFace(n){
 }
 
 let babyGalleryAnswers = [];
+let babyQuizSequence = []; // 정답이 있는 사진들의 인덱스만 순서대로 모아둔 목록 (채점 퀴즈용)
 
 function renderBabyFilm(photos, answers){
   babyGalleryPhotos = photos;
   babyGalleryAnswers = answers || [];
+  babyQuizSequence = [];
+  babyGalleryAnswers.forEach(function(answer, i){ if(answer) babyQuizSequence.push(i); });
+
   const track = document.getElementById('babyFilmTrack');
   track.innerHTML = '';
   const looped = photos.concat(photos); // 이어붙여서 끊김 없이 왼쪽으로 계속 흐르게 함
@@ -1390,10 +1465,17 @@ function updateBabyQuizForIndex(index){
     sheet.classList.remove('show');
     return;
   }
+  document.getElementById('babyQuizBody').style.display = 'block';
+  document.getElementById('babyQuizFinal').style.display = 'none';
   document.getElementById('babyQuizResult').textContent = '';
   document.getElementById('babyQuizResult').className = 'baby-quiz-result';
   document.getElementById('babyQuizChoices').style.display = 'flex';
+  document.getElementById('babyQuizNextBtn').style.display = 'none';
   sheet.classList.add('show');
+
+  if(babyQuizSequentialMode){
+    document.getElementById('lightboxCounter').textContent = '문제 ' + (babyQuizSeqPos + 1) + ' / ' + babyQuizSequence.length;
+  }
 }
 
 function answerBabyQuiz(choice){
@@ -1403,6 +1485,95 @@ function answerBabyQuiz(choice){
   resultEl.textContent = isCorrect ? '정답!' : '땡!';
   resultEl.className = 'baby-quiz-result show' + (isCorrect ? '' : ' wrong');
   document.getElementById('babyQuizChoices').style.display = 'none';
+
+  if(babyQuizSequentialMode){
+    if(isCorrect) babyQuizScore++;
+    const nextBtn = document.getElementById('babyQuizNextBtn');
+    nextBtn.textContent = (babyQuizSeqPos + 1 < babyQuizSequence.length) ? '다음 문제' : '결과 보기';
+    nextBtn.style.display = 'block';
+  }
+}
+
+// ---- 이름 적고 참여 여부 고른 뒤, 정답이 있는 사진들을 순서대로 풀어보는 채점 퀴즈 ----
+let babyQuizSequentialMode = false;
+let babyQuizSeqPos = 0;
+let babyQuizScore = 0;
+let babyQuizParticipantName = '';
+let babyQuizJoinChoice = null;
+
+function openBabyQuizIntro(){
+  document.getElementById('babyQuizName').value = '';
+  babyQuizJoinChoice = null;
+  document.querySelectorAll('#babyQuizJoinRow .rsvp-radio-btn').forEach(function(btn){ btn.classList.remove('selected'); });
+  document.getElementById('babyQuizIntroMsg').textContent = '';
+  document.getElementById('babyQuizIntroMsg').className = 'rsvp-msg';
+  document.getElementById('babyQuizIntro').classList.add('show');
+}
+
+function closeBabyQuizIntro(e){
+  if(e) e.stopPropagation();
+  document.getElementById('babyQuizIntro').classList.remove('show');
+}
+
+function selectBabyQuizJoin(value){
+  babyQuizJoinChoice = value;
+  document.querySelectorAll('#babyQuizJoinRow .rsvp-radio-btn').forEach(function(btn){
+    btn.classList.toggle('selected', btn.dataset.value === value);
+  });
+}
+
+function submitBabyQuizIntro(){
+  const msgEl = document.getElementById('babyQuizIntroMsg');
+  const name = document.getElementById('babyQuizName').value.trim();
+  if(!name){
+    msgEl.textContent = '이름을 입력해주세요.';
+    msgEl.className = 'rsvp-msg error';
+    return;
+  }
+  if(!babyQuizJoinChoice){
+    msgEl.textContent = '참여 여부를 선택해주세요.';
+    msgEl.className = 'rsvp-msg error';
+    return;
+  }
+  closeBabyQuizIntro();
+  if(babyQuizJoinChoice === '아니오') return; // 구경만 하기로 했으면 그냥 닫고 자유롭게 사진만 봄
+  if(babyQuizSequence.length === 0) return; // 채점 가능한(정답이 있는) 사진이 없으면 조용히 무시
+
+  babyQuizParticipantName = name;
+  babyQuizScore = 0;
+  babyQuizSeqPos = 0;
+  babyQuizSequentialMode = true;
+  document.getElementById('lightbox').classList.add('sequential'); // 순서대로 풀도록 이전/다음 버튼은 숨김
+  openBabyQuiz(babyQuizSequence[0]);
+}
+
+function goToNextBabyQuizQuestion(){
+  babyQuizSeqPos++;
+  if(babyQuizSeqPos < babyQuizSequence.length){
+    openBabyQuiz(babyQuizSequence[babyQuizSeqPos]);
+  } else {
+    finishBabyQuizSequential();
+  }
+}
+
+function finishBabyQuizSequential(){
+  const total = babyQuizSequence.length;
+  document.getElementById('babyQuizBody').style.display = 'none';
+  document.getElementById('babyQuizFinalText').textContent = babyQuizParticipantName + '님, ' + babyQuizScore + ' / ' + total + '개 맞히셨어요!';
+  document.getElementById('babyQuizFinal').style.display = 'block';
+  document.getElementById('lightbox').classList.remove('sequential');
+  document.getElementById('lightboxCounter').textContent = '';
+  submitBabyQuizResult(babyQuizParticipantName, babyQuizScore, total);
+  babyQuizSequentialMode = false;
+}
+
+function submitBabyQuizResult(name, score, total){
+  if(!CONFIG.rsvpApiUrl) return;
+  fetch(CONFIG.rsvpApiUrl, {
+    method: 'POST',
+    mode: 'no-cors',
+    body: new URLSearchParams({ type: 'babyquiz', name: name, score: String(score), total: String(total) })
+  }).catch(function(){ /* 실패해도 화면엔 이미 결과를 보여줬으므로 조용히 무시 */ });
 }
 
 // 화동 필름 갤러리: 평소엔 왼쪽으로 천천히 자동으로 흐르다가, 사용자가 직접 옆으로
