@@ -36,18 +36,6 @@ function doPost(e) {
       e.parameter.name || '',
       e.parameter.message || ''
     ]);
-  } else if (type === 'babyquiz') {
-    let sheet = ss.getSheetByName('화동퀴즈');
-    if (!sheet) {
-      sheet = ss.insertSheet('화동퀴즈');
-      sheet.appendRow(['시각', '이름', '맞은개수', '전체문제수']);
-    }
-    sheet.appendRow([
-      new Date(),
-      e.parameter.name || '',
-      e.parameter.score || '',
-      e.parameter.total || ''
-    ]);
   }
 
   return ContentService.createTextOutput('ok');
