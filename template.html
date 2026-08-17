@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="color-scheme" content="light only">
 <title>양희근 · 장한결 결혼합니다</title>
 
 <meta property="og:title" content="{{OG_TITLE}}">
@@ -35,6 +36,7 @@
     --pink: #E86A8A;
   }
   *{ box-sizing: border-box; }
+  html{ color-scheme: light; background: var(--bg); } /* 기기가 다크모드여도 항상 밝은 배경으로 표시 */
   html,body{ margin:0; padding:0; }
   body{
     background: var(--bg);
@@ -1980,7 +1982,7 @@ function copyInviteLink(e){
    처음 발생하는 탭/스크롤을 감지해 그 즉시 재생합니다. 우측 상단 버튼으로도
    언제든 켜고 끌 수 있습니다.
    ========================================================= */
-const BG_MUSIC_START = 29; // 이 지점부터 재생 (반복/최초 재생 시 항상 여기서 시작)
+const BG_MUSIC_START = 31; // 이 지점부터 재생 (반복/최초 재생 시 항상 여기서 시작)
 const BG_MUSIC_FADE_MS = 5000; // 재생 시작 후 이 시간(ms) 동안 볼륨 0 -> BG_MUSIC_VOLUME 서서히 커짐(페이드인, 4제곱 곡선 사용 - 초반에 더 오래 조용함)
 const BG_MUSIC_VOLUME = 0.21; // 페이드인이 끝난 뒤 유지되는 최종 볼륨(0~1)
 const bgAudio = document.getElementById('bgAudio');
