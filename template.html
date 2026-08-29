@@ -2029,16 +2029,30 @@ function attemptSilentAutoplay(){
   else { bgAudio.addEventListener('loadedmetadata', seekAndPlay, { once:true }); }
 }
 
+let musicAutoUnmuteTimer = null;
 bgAudio.addEventListener('play', function(){
   musicPlaying = true;
   updateMusicButton();
   if(!bgAudio.muted){
     fadeInMusicVolume();
+    return;
   }
+  // 이 사이트에서 이미 여러 번 소리를 들어본 적 있는 브라우저(카카오톡 인앱
+  // 브라우저 등)는 사용자 제스처 없이도 음소거 해제를 허용해주는 경우가
+  // 있습니다. 그런 경우를 위해 짧게 대기한 뒤 음소거 해제를 한 번
+  // 시도합니다. 허용 안 되는 브라우저에서는 이 시도가 조용히 무시될 뿐,
+  // 아무 문제도 일으키지 않습니다(진짜 탭이 오면 startMusicWithSound()가
+  // 그 즉시 소리를 켭니다).
+  clearTimeout(musicAutoUnmuteTimer);
+  musicAutoUnmuteTimer = setTimeout(function(){
+    bgAudio.muted = false;
+    fadeInMusicVolume();
+  }, 200);
 });
 bgAudio.addEventListener('pause', function(){
   musicPlaying = false;
   updateMusicButton();
+  clearTimeout(musicAutoUnmuteTimer);
   clearInterval(musicFadeTimer);
 });
 bgAudio.addEventListener('ended', function(){
