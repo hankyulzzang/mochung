@@ -395,6 +395,7 @@
     object-fit:cover;
     display:block;
     background:#EEF4F7;
+    cursor:pointer;
   }
   .film-hint{ color:var(--green-soft); font-size:14px; margin:14px 0 0; }
   .baby-quiz-hint{ color:var(--gold); font-size:15px; font-weight:700; }
@@ -419,8 +420,8 @@
     color:#FFFFFF;
   }
   .share-title{ font-size:34px; font-style:italic; margin:0 0 14px; text-shadow:0 2px 10px rgba(0,0,0,0.35); }
-  .share-text{ font-size:14px; line-height:1.9; margin:0 0 26px; text-shadow:0 1px 6px rgba(0,0,0,0.35); }
-  .share-buttons{ display:flex; gap:10px; }
+  .share-text{ font-size:14px; line-height:1.9; margin:38px 0 26px; text-shadow:0 1px 6px rgba(0,0,0,0.35); }
+  .share-buttons{ display:flex; gap:10px; margin-top:38px; }
   .share-btn{ padding:12px 22px; border-radius:999px; border:none; font-family:inherit; font-size:14px; cursor:pointer; }
   .share-btn-primary{ background:var(--gold); color:#FFFFFF; }
   .share-btn-secondary{ background:#FFFFFF; color:var(--green); }
@@ -724,7 +725,7 @@
 
   <section>
     <p class="eyebrow fadeup">참석 여부 회신</p>
-    <p class="acc-intro fadeup">참석 여부를 미리 알려주시면 준비에 큰 도움이 됩니다.</p>
+    <p class="acc-intro fadeup">참석 여부를 미리 알려주시면<br>준비에 큰 도움이 됩니다.</p>
     <div class="rsvp-box fadeup">
       <div class="rsvp-field">
         <label class="rsvp-label">이름</label>
@@ -784,7 +785,7 @@
     <div class="baby-film-wrap fadeup" id="babyFilmWrap">
       <div class="baby-film-track" id="babyFilmTrack"></div>
     </div>
-    <p class="film-hint baby-quiz-hint fadeup">나는 누구일까요? 퀴즈</p>
+    <p class="film-hint baby-quiz-hint fadeup">눌러서 자세히 보기</p>
   </section>
 
   <section>
@@ -1460,12 +1461,13 @@ function renderFilmStrip(photos){
   const strip = document.getElementById('filmStrip');
   strip.innerHTML = '';
   const looped = photos.concat(photos);
-  looped.forEach(function(src){
+  looped.forEach(function(src, i){
     const card = document.createElement('div');
     card.className = 'film-card';
     const img = document.createElement('img');
     img.src = src;
     img.loading = 'lazy';
+    img.onclick = function(){ openLightbox(i % photos.length, photos); };
     card.appendChild(img);
     strip.appendChild(card);
   });
