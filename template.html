@@ -249,7 +249,7 @@
   .gallery-grid img, .gallery-more img{ width:100%; aspect-ratio:1; object-fit:cover; border-radius:0; display:block; background:#EEF4F7; }
   .gallery-more{ display:none; grid-template-columns:repeat(3,1fr); gap:1px; margin:0 -28px; }
   .gallery-more.show{ display:grid; }
-  .more-btn{ margin-top:14px; width:100%; padding:10px; background:transparent; border:1px solid var(--gold-soft); border-radius:4px; color:var(--gold); font-family:'Gowun Dodum', sans-serif; font-size:14px; cursor:pointer; }
+  .more-btn{ margin-top:14px; width:100%; padding:10px; background:transparent; border:1px solid var(--gold-soft); border-radius:4px; color:var(--gold); font-family:'Gowun Dodum', sans-serif; font-size:16px; font-weight:700; cursor:pointer; }
 
   .flower-intro{ color:var(--green-soft); font-size:14px; line-height:1.9; margin:0 0 26px; }
   .flower-faces{ display:flex; justify-content:center; margin-bottom:30px; }
@@ -358,7 +358,7 @@
     gap:8px;
   }
   .guestbook-item{
-    max-height:76px;
+    max-height:150px;
     overflow-y:auto;
     border:1px solid var(--gold-soft);
     border-radius:6px;
@@ -846,7 +846,7 @@
       </div>
       <div class="rsvp-field">
         <label class="rsvp-label">메시지</label>
-        <textarea class="rsvp-input" id="gbMessage" placeholder="축하 메시지를 남겨주세요"></textarea>
+        <textarea class="rsvp-input" id="gbMessage" placeholder="축하 메시지를 남겨주세요 (최대 5줄)" maxlength="120"></textarea>
       </div>
       <button class="rsvp-submit" id="gbSubmitBtn" type="button" onclick="submitGuestbook()">남기기</button>
       <p class="rsvp-msg" id="gbMsg"></p>
@@ -1314,19 +1314,19 @@ function renderGallery(photos){
   const btn = document.getElementById('moreBtn');
   main.innerHTML = '';
   more.innerHTML = '';
-  photos.slice(0,6).forEach(function(src, idx){
+  photos.slice(0,12).forEach(function(src, idx){
     const img = document.createElement('img');
     img.src = src;
     img.loading = 'lazy';
     img.onclick = function(){ openLightbox(idx, photos); };
     main.appendChild(img);
   });
-  if(photos.length > 6){
-    photos.slice(6,50).forEach(function(src, idx){
+  if(photos.length > 12){
+    photos.slice(12,50).forEach(function(src, idx){
       const img = document.createElement('img');
       img.src = src;
       img.loading = 'lazy';
-      img.onclick = function(){ openLightbox(idx + 6, photos); };
+      img.onclick = function(){ openLightbox(idx + 12, photos); };
       more.appendChild(img);
     });
     btn.style.display = 'block';
