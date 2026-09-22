@@ -250,7 +250,7 @@
   .gallery-grid img, .gallery-more img{ width:100%; aspect-ratio:1; object-fit:cover; border-radius:0; display:block; background:#EEF4F7; }
   .gallery-more{ display:none; grid-template-columns:repeat(3,1fr); gap:1px; margin:0 -28px; }
   .gallery-more.show{ display:grid; }
-  .more-btn{ margin-top:14px; width:100%; padding:10px; background:transparent; border:1px solid var(--gold-soft); border-radius:4px; color:var(--gold); font-family:'Gowun Dodum', sans-serif; font-size:14px; cursor:pointer; }
+  .more-btn{ margin-top:14px; width:100%; padding:10px; background:transparent; border:1px solid var(--gold-soft); border-radius:4px; color:var(--gold); font-family:'Gowun Dodum', sans-serif; font-size:16px; font-weight:700; cursor:pointer; }
 
   .flower-intro{ color:var(--green-soft); font-size:14px; line-height:1.9; margin:0 0 26px; }
   .flower-faces{ display:flex; justify-content:center; margin-bottom:30px; }
@@ -359,7 +359,7 @@
     gap:8px;
   }
   .guestbook-item{
-    max-height:76px;
+    max-height:150px;
     overflow-y:auto;
     border:1px solid var(--gold-soft);
     border-radius:6px;
@@ -822,7 +822,7 @@
       </div>
       <div class="rsvp-field">
         <label class="rsvp-label">메시지</label>
-        <textarea class="rsvp-input" id="gbMessage" placeholder="축하 메시지를 남겨주세요"></textarea>
+        <textarea class="rsvp-input" id="gbMessage" placeholder="축하 메시지를 남겨주세요 (최대 5줄)" maxlength="120"></textarea>
       </div>
       <button class="rsvp-submit" id="gbSubmitBtn" type="button" onclick="submitGuestbook()">남기기</button>
       <p class="rsvp-msg" id="gbMsg"></p>
@@ -893,7 +893,7 @@ const CONFIG = {
   kakaoJsKey: "95af2fbc5bfb334e867ed5d1c5f8c7fb",
   // 카카오 개발자 콘솔 > 도구 > 메시지 템플릿에서 만든 "피드형" 커스텀 템플릿 ID
   // (변수: THU=사진, title=제목, desc=본문 / 버튼 링크는 고정으로 이 사이트 주소를 가리킴)
-  kakaoTemplateId: 135773,
+  kakaoTemplateId: 137367,
   // 참석 여부 회신/방명록을 구글시트에 저장해주는 Apps Script 웹앱 주소.
   // 시트의 "RSVP연동 URL" 칸에 넣어두면 이 값을 그 값으로 덮어씁니다.
   rsvpApiUrl: ""
@@ -1290,19 +1290,19 @@ function renderGallery(photos){
   const btn = document.getElementById('moreBtn');
   main.innerHTML = '';
   more.innerHTML = '';
-  photos.slice(0,6).forEach(function(src, idx){
+  photos.slice(0,12).forEach(function(src, idx){
     const img = document.createElement('img');
     img.src = src;
     img.loading = 'lazy';
     img.onclick = function(){ openLightbox(idx, photos); };
     main.appendChild(img);
   });
-  if(photos.length > 6){
-    photos.slice(6,50).forEach(function(src, idx){
+  if(photos.length > 12){
+    photos.slice(12,50).forEach(function(src, idx){
       const img = document.createElement('img');
       img.src = src;
       img.loading = 'lazy';
-      img.onclick = function(){ openLightbox(idx + 6, photos); };
+      img.onclick = function(){ openLightbox(idx + 12, photos); };
       more.appendChild(img);
     });
     btn.style.display = 'block';
@@ -1856,9 +1856,9 @@ function ensureKakaoReady(){
 }
 
 async function shareInvite(){
-  // 카카오 개발자 콘솔의 "도구 > 메시지 템플릿"에서 만든 사용자 정의(피드형)
-  // 템플릿을 사용합니다. sendDefault의 인라인 Feed 템플릿과 달리, 이 방식은
-  // 비즈니스 인증/카카오톡 채널 연결이 전혀 필요 없습니다 (둘은 서로 다른 기능).
+  // [간단 버전 전용] 아래 CONFIG.kakaoTemplateId(137367)로 등록해둔, 버튼
+  // 링크가 이 간단 버전(simple.html) 주소로 연결되는 전용 카카오 커스텀
+  // 템플릿을 사용합니다.
   const kakaoOk = await ensureKakaoReady();
   if(kakaoOk && window.Kakao.Share){
     try{
